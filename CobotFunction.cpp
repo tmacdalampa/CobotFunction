@@ -161,11 +161,11 @@ int _tmain(int argc, _TCHAR* argv[])
     pair<array<double, 6>, array<double, 6>> Position;
     Position.first = Init_Position;
     Position.second = Goal_Position;
-    array<double, 3> Gain = {0.05, 0.025, 0.005}; //{imp_gain, damp_gain, integral_gain}
+    array<double, 3> Gain = {0.05, 0.001, 0.005}; //{imp_gain, damp_gain, integral_gain}
     ArmController Scorpio_Arm(Position, Gain);//input goal and current position in degrees
     Code = RegisterCallback(&CyclicTask, &Scorpio_Arm);
     // Wait for motion to run in the cyclic task
-    Sleep(8000);
+    Sleep(15000);
 
 #if 1
 #pragma region PowerAxis

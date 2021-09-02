@@ -49,7 +49,7 @@ array<double, 6> ArmController::UpdateGoalTorque()
         if (i == 5)
         {
             _pos_error[i] = _goal_position[i] - _current_position[i];
-            goal_torque[i] = _Kp * (_pos_error[i]) + _Kd * (goal_vel - _current_velocity[i]) + _Ki * _pos_sum_error[i];
+            goal_torque[i] = _Kp * (_pos_error[i]) + _Kd * (_current_velocity[i]) + _Ki * _pos_sum_error[i];
             if (goal_torque[i] > 120)
             {
                 goal_torque[i] = 120;
