@@ -82,13 +82,13 @@ array<double, 6> ArmController::Auxiliary_Torque(array<double, 6> pos, array<dou
     array<double, 6> aux_torque = { 0, 0, 0, 0, 0, 0 };
     for (int i = 0; i < 6; i++)
     {
-        if (vel[i] > 10) //move positive
+        if (vel[i] > 300) //move positive
         {
             vel_trend = positive;
             aux_torque[i] = MotorStaticFrictionTorque[i];
 
         }
-        else if (vel[i] < -10)
+        else if (vel[i] < -300)
         {
             vel_trend = negative;
             aux_torque[i] = -MotorStaticFrictionTorque[i];

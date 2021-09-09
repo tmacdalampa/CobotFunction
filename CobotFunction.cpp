@@ -33,7 +33,7 @@ int CyclicTask(PVOID Context)
         GetAxisPosition(TargetAxis[i], mcActualValue, &CurrentPosition[i]);
         GetAxisVelocity(TargetAxis[i], mcActualValue, &CurrentVelocity[i]);
     }
-#if 1
+#if 0
 
     double Target_Torque6 = a->Auxiliary_Torque_Axis6(CurrentPosition[5], CurrentVelocity[5]);
     SetAxisTorque(TargetAxis[5], Target_Torque6);
