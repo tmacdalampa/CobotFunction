@@ -1147,4 +1147,3 @@ double ArmController::Auxiliary_Torque_Axis6(double pos, double vel)
     }
     return aux_torque_6;
 }
-

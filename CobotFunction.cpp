@@ -177,7 +177,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     Code = RegisterCallback(&CyclicTask, &Scorpio_Arm);
     // Wait for motion to run in the cyclic task
-    Sleep(500000);
+    Sleep(60000);
 
 #if 1
 #pragma region PowerAxis

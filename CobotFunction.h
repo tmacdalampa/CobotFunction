@@ -42,6 +42,3 @@
 
 #include "ksapi.h"
 #include "ksmotion.h"
-
-
-  

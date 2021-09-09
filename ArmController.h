@@ -36,7 +36,7 @@ private:
 
 	//member function
 	double rounding(double num);
-	
+
 	array<double, 6> pre_pos;
 	array<double, 6> pre_vel;
 
