@@ -37,7 +37,7 @@
 
 
 #ifdef UNDER_RTSS
-#include <rtssapi.h>  // RTX64 APIs that can only be used in real-time applications.
+#include "rtssapi.h"  // RTX64 APIs that can only be used in real-time applications.
 #endif // UNDER_RTSS
 
 #include "ksapi.h"

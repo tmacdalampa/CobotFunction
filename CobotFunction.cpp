@@ -25,7 +25,7 @@ int CyclicTask(PVOID Context)
 #if 0 //here test what will happened when setting different percentage of torque
     for (int i = 5; i < 6; i++)
     {
-        SetAxisTorque(TargetAxis[i], 40);
+        SetAxisTorque(TargetAxis[i], 0);
     }
 #else
     for (int i = 0; i < 6; i++)
@@ -34,32 +34,20 @@ int CyclicTask(PVOID Context)
         GetAxisVelocity(TargetAxis[i], mcActualValue, &CurrentVelocity[i]);
     }
 #if 1
-    GTorque = a->Gravity_Compensation_Torque(CurrentPosition);//joint space
-        //Torque_Vector = sqrt((Trigger_pos_1 - Pre_Trigger_pos_1) ^ 2 + (Trigger_pos_1 - Pre_Trigger_pos_1) ^ 2);
-    double Target_Torque1 = a->Auxiliary_Torque_Axis1(CurrentPosition[0], CurrentVelocity[0]);
-    SetAxisTorque(TargetAxis[0], Target_Torque1 + GTorque[0]);
-    double Target_Torque2 = a->Auxiliary_Torque_Axis2(CurrentPosition[1], CurrentVelocity[1]);
-    SetAxisTorque(TargetAxis[1], Target_Torque2 + GTorque[1]);
-    double Target_Torque3 = a->Auxiliary_Torque_Axis3(CurrentPosition[2], CurrentVelocity[2]);
-    SetAxisTorque(TargetAxis[2], Target_Torque3 + GTorque[2]);
-    double Target_Torque4 = a->Auxiliary_Torque_Axis4(CurrentPosition[3], CurrentVelocity[3]);
-    SetAxisTorque(TargetAxis[3], Target_Torque4 + GTorque[3]);
-    double Target_Torque5 = a->Auxiliary_Torque_Axis5(CurrentPosition[4], CurrentVelocity[4]);
-    SetAxisTorque(TargetAxis[4], Target_Torque5 + GTorque[4]);
+
     double Target_Torque6 = a->Auxiliary_Torque_Axis6(CurrentPosition[5], CurrentVelocity[5]);
-    SetAxisTorque(TargetAxis[5], Target_Torque6 + GTorque[5]);
+    SetAxisTorque(TargetAxis[5], Target_Torque6);
 #else
     ATorque = a->Auxiliary_Torque(CurrentPosition, CurrentVelocity);
     GTorque = a->Gravity_Compensation_Torque(CurrentPosition);//joint space
     for (int i = 0; i < 6; i++)
     {
-        TargetTorque[i] = GTorque[i];
+        TargetTorque[i] = GTorque[i] + ATorque[i];
         SetAxisTorque(TargetAxis[i], TargetTorque[i]);
     }
 #endif
 #endif
 
-    return 0;
     return 0;
 }
 
@@ -177,7 +165,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     Code = RegisterCallback(&CyclicTask, &Scorpio_Arm);
     // Wait for motion to run in the cyclic task
-    Sleep(500000);
+    Sleep(60000);
 
 #if 1
 #pragma region PowerAxis
