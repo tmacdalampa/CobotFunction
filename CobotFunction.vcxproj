@@ -210,7 +210,7 @@
       <Message>RTX64 StampTool</Message>
     </PostBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(RTX64SDKDir4)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(RTX64SDKDir4)include;$(KINGSTARSDKDir4)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/openmp- /Gs99999 /Gu %(AdditionalOptions)</AdditionalOptions>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -230,8 +230,8 @@
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>startupCRT.lib;libcmt.lib;libcpmt.lib;libucrt.lib;libvcruntime.lib;rtx_rtss.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(RTX64SDKDir4)lib\$(Rtx64Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>startupCRT.lib;libcmt.lib;libcpmt.lib;libucrt.lib;libvcruntime.lib;rtx_rtss.lib;ksapi_rtss.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(RTX64SDKDir4)lib\$(Rtx64Platform);$(KINGSTARSDKDir4)lib\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Driver>Driver</Driver>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <EnableUAC>false</EnableUAC>
