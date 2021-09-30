@@ -24,12 +24,21 @@
     <ClCompile Include="ArmController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Kinematics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CobotFunction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ArmController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="def.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Kinematics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

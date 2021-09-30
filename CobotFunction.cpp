@@ -13,21 +13,14 @@
 using namespace std;
 
 int CyclicTask(PVOID Context)
-{   
-    
+{
+
     int TargetAxis[6] = { 0, 1, 2, 3, 4, 5 };
     ArmController* a = (ArmController*)Context;
     array<double, 6> TargetPosition;
     array<double, 6> CurrentPosition;
-    if (a->motion_end_flag != true)
-    {
-        TargetPosition = a->UpdatePosition();
-        for (int i = 0; i < 6; i++)
-        {
-            SetAxisPosition(TargetAxis[i], TargetPosition[i]);
-        }
-    }
-    
+
+
     return 0;
 }
 
@@ -75,7 +68,7 @@ int _tmain(int argc, _TCHAR* argv[])
             RtPrintf("Failed to set axis unit: 0x%x\n", Code);
             //goto Exit;
         }
-        
+
         Code = EnableAxisUnitConversion(TargetAxis[i], TRUE);
         if (Code != errNoError) {
             RtPrintf("Failed to enable axis unit: 0x%x\n", Code);
@@ -108,7 +101,7 @@ int _tmain(int argc, _TCHAR* argv[])
 #endif
 
 #pragma region PowerAxis
-#if 0
+#if 1
     for (int i = 0; i < 6; i++)
     {
         // Reset Any error in the axis
@@ -127,7 +120,7 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 #endif 
 #pragma endregion
-    array<double, 6> Init_Position = {0,45,45,0,90,0};
+    array<double, 6> Init_Position = { 0,45,45,0,90,0 };
 
 #if 1
     for (int i = 0; i < 6; i++)
@@ -137,10 +130,11 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 #endif
     ArmController Scorpio_Arm(Init_Position);//input goal and current position in degrees
+    /*
     array<double, 3> GoalPose = { 0.2230, 0.6, 180 };
     array < double, 3> GoalPosition;
-    
-    
+
+
     double vel = 0.05;
     double acc = 0.1;
     Scorpio_Arm.MoveLinear(GoalPose, vel, acc);
@@ -149,18 +143,18 @@ int _tmain(int argc, _TCHAR* argv[])
         if (Scorpio_Arm.start_move_flag == true) break;
         Sleep(10);
     }
-    
+
     Code = RegisterCallback(&CyclicTask, &Scorpio_Arm);
     // Wait for motion to run in the cyclic task
-    
+
     while (1)
     {
         if (Scorpio_Arm.motion_end_flag == true) break;
         Sleep(10);
     }
+    */
     
-    //Sleep(5000);
-    
+
 #if 0
 #pragma region PowerAxis
     // Disable the axis

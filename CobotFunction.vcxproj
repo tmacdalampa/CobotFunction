@@ -43,10 +43,13 @@
   <ItemGroup>
     <ClInclude Include="ArmController.h" />
     <ClInclude Include="CobotFunction.h" />
+    <ClInclude Include="def.h" />
+    <ClInclude Include="Kinematics.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ArmController.cpp" />
     <ClCompile Include="CobotFunction.cpp" />
+    <ClCompile Include="Kinematics.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -142,9 +145,11 @@
   <!-- Add .rtdll extension to RtssDebug and RtssRelease -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RtssDebug|x64'">
     <TargetExt>.rtss</TargetExt>
+    <IncludePath>./Eigen/;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RtssRelease|x64'">
     <TargetExt>.rtss</TargetExt>
+    <IncludePath>./Eigen/;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <!-- Turn off Manifest and Incremental Linker for RTSS -->
   <PropertyGroup>
