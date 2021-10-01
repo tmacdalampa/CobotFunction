@@ -4,6 +4,9 @@ using namespace std;
 
 #define AXISNUM 6
 #define ENC_FULL 131072
+#define PI 3.1415926
+#define RAD2DEG 180/PI
+#define DEG2RAD PI/180
 
 struct DHTable
 {
@@ -16,8 +19,23 @@ struct DHTable
 
 struct HardwareData
 {
-	array<double, AXISNUM> zero_points = { 57886.1416, 10373.1702, -82.9193, -1005.4330, 21242, 28205 };
+	//array<double, AXISNUM> zero_points = { 57886.1416, 10373.1702, -82.9193, -1005.4330, 21242, 28205 };
+	array<double, AXISNUM> zero_points = { 0,0,0,0,0,0 };
 	array<int, AXISNUM> gear_ratios = {161, 161, 121, 161, 161, 161};
+	void ENC2DEG(array<double, AXISNUM>& enc_cnts, array<double, AXISNUM>& axis_deg)
+	{
+		for (int i = 0; i < AXISNUM; i++)
+		{
+			axis_deg[i] = ((enc_cnts[i] - zero_points[i]) / gear_ratios[i]);//in degree
+		}
+	}
+	void DEG2ENC(array<double, AXISNUM>& enc_cnts, array<double, AXISNUM>& axis_deg)
+	{
+		for (int i = 0; i < AXISNUM; i++)
+		{
+			enc_cnts[i] = axis_deg[i] * gear_ratios[i] + zero_points[i];
+		}
+	}
 
 };
 
@@ -29,3 +47,4 @@ enum KinRes
 	EXCEED_WORKSPACE = 3,
 	SINGULAR = 4
 };
+

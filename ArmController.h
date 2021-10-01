@@ -14,10 +14,16 @@ using namespace std;
 class ArmController
 {
 private:
-	Kinematics Kin;
+	Kinematics* Kin;
+	HardwareData* HwTm;
+
+	
 	
 public:
-	
-	ArmController(array<double, 6> init_position);
+	array<double, AXISNUM> robot_axis_deg;
+	array<double, AXISNUM> robot_pose;
+
+	ArmController(array<double, AXISNUM> init_position);
 	~ArmController(void);
+	void MotionPlanning(queue<array<double, 6>> init_goal, double vel, double acc, double ang_vel, double ang_acc);
 };

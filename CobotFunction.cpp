@@ -23,10 +23,37 @@ int CyclicTask(PVOID Context)
 
     return 0;
 }
-
+pair<bool, array<double, 6>> LoadPoint()
+{
+    pair<bool, array<double, 6>> res;
+    static array<double, 6> gp0 = { 0, 0, 0, 0, 0, 0};
+    static array<double, 6> gp1 = { 0.1, 0.2, 0, 0, 0, 0};
+    static array<double, 6> gp2 = { 0.1, -0.2, 0, 0, 0, 0};
+    static int i = 0;
+    int j = i % 7;
+    if (j<3)
+    {
+        switch (j)
+        {
+        case 0:
+            res.second = gp0;
+            break;
+        case 1:
+            res.second = gp1;
+            break;
+        case 2:
+            res.second = gp2;
+            break;
+        }
+    }
+    else res.first = false;
+    //cout << "i = " << i << endl;
+    i = i + 1;
+    return res;
+}
 int _tmain(int argc, _TCHAR* argv[])
 {
-#if 1
+#if 0
     SlaveStatus axis = { 0 };
 
     int axisResolution = 131072;
@@ -101,7 +128,7 @@ int _tmain(int argc, _TCHAR* argv[])
 #endif
 
 #pragma region PowerAxis
-#if 1
+#if 0
     for (int i = 0; i < 6; i++)
     {
         // Reset Any error in the axis
@@ -120,39 +147,28 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 #endif 
 #pragma endregion
-    array<double, 6> Init_Position = { 0,45,45,0,90,0 };
+    array<double, 6> Init_Position = { 0,90*161,0,0,90*161,0 };
 
-#if 1
+#if 0
     for (int i = 0; i < 6; i++)
     {
         GetAxisPosition(TargetAxis[i], mcActualValue, &Init_Position[i]);
         //RtPrintf("Init position:%d\n", (int)Init_Position[i]);
     }
 #endif
+    pair<bool, array<double, 6>> LP_res = LoadPoint();
+    queue<array<double, 6>> init_goal;
+    init_goal.push(LP_res.second);
+
+    LP_res = LoadPoint();
+    init_goal.push(LP_res.second);
+    
     ArmController Scorpio_Arm(Init_Position);//input goal and current position in degrees
-    /*
-    array<double, 3> GoalPose = { 0.2230, 0.6, 180 };
-    array < double, 3> GoalPosition;
 
-
-    double vel = 0.05;
-    double acc = 0.1;
-    Scorpio_Arm.MoveLinear(GoalPose, vel, acc);
-    while (1)
-    {
-        if (Scorpio_Arm.start_move_flag == true) break;
-        Sleep(10);
-    }
-
-    Code = RegisterCallback(&CyclicTask, &Scorpio_Arm);
-    // Wait for motion to run in the cyclic task
-
-    while (1)
-    {
-        if (Scorpio_Arm.motion_end_flag == true) break;
-        Sleep(10);
-    }
-    */
+    Scorpio_Arm.MotionPlanning(init_goal, 0.2, 2, 45, 450);
+    init_goal.pop();
+    
+    //Code = RegisterCallback(&CyclicTask, &Scorpio_Arm);
     
 
 #if 0
