@@ -44,11 +44,13 @@
     <ClInclude Include="ArmController.h" />
     <ClInclude Include="CobotFunction.h" />
     <ClInclude Include="def.h" />
+    <ClInclude Include="Intepolator.h" />
     <ClInclude Include="Kinematics.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ArmController.cpp" />
     <ClCompile Include="CobotFunction.cpp" />
+    <ClCompile Include="Intepolator.cpp" />
     <ClCompile Include="Kinematics.cpp" />
   </ItemGroup>
   <ItemGroup>

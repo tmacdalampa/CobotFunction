@@ -16,21 +16,50 @@ int CyclicTask(PVOID Context)
 {
 
     int TargetAxis[6] = { 0, 1, 2, 3, 4, 5 };
-    ArmController* a = (ArmController*)Context;
-    array<double, 6> TargetPosition;
     array<double, 6> CurrentPosition;
+    array<double, 6> TargetPosition;
+
+    ArmController* a = (ArmController*)Context;
+
+    if (a->break_flag == false)
+    {
+        
+        for (int i = 0; i < 6; i++)
+        {
+            GetAxisPosition(TargetAxis[i], mcSetValue, &CurrentPosition[i]);
+        }
+        a->UpdateRobotStates(CurrentPosition);
+
+        TargetPosition = a->UpdateTargetPosition();
+#if 0
+        cout << "axis_target_posuition = " << TargetPosition[0] << " , "
+            << TargetPosition[1] << " , "
+            << TargetPosition[2] << " , "
+            << TargetPosition[3] << " , "
+            << TargetPosition[4] << " , "
+            << TargetPosition[5] << endl;
+#endif
+        for (int i = 0; i < 6; i++)
+        {
+            SetAxisPosition(TargetAxis[i], TargetPosition[i]);
+        }
+        
+    }
 
 
     return 0;
 }
+
 pair<bool, array<double, 6>> LoadPoint()
 {
+    double A, B, C; //relative roll pitch yaw as init pose
+    A = 0; B = 0; C = 0;
     pair<bool, array<double, 6>> res;
-    static array<double, 6> gp0 = { 0, 0, 0, 0, 0, 0};
-    static array<double, 6> gp1 = { 0.1, 0.2, 0, 0, 0, 0};
-    static array<double, 6> gp2 = { 0.1, -0.2, 0, 0, 0, 0};
+    static array<double, 6> gp0 = { 0, 0, 0, A, B, C};
+    static array<double, 6> gp1 = { 0.1, 0.2, 0, A, B, C};
+    static array<double, 6> gp2 = { 0.1, -0.2, 0, A, B, C};
     static int i = 0;
-    int j = i % 7;
+    int j = i % 3;
     if (j<3)
     {
         switch (j)
@@ -53,7 +82,7 @@ pair<bool, array<double, 6>> LoadPoint()
 }
 int _tmain(int argc, _TCHAR* argv[])
 {
-#if 0
+#if 1
     SlaveStatus axis = { 0 };
 
     int axisResolution = 131072;
@@ -147,9 +176,9 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 #endif 
 #pragma endregion
-    array<double, 6> Init_Position = { 0,90*161,0,0,90*161,0 };
+    array<double, 6> Init_Position = { 0,90*161,0,0,90*161, 0};
 
-#if 0
+#if 1
     for (int i = 0; i < 6; i++)
     {
         GetAxisPosition(TargetAxis[i], mcActualValue, &Init_Position[i]);
@@ -167,10 +196,19 @@ int _tmain(int argc, _TCHAR* argv[])
 
     Scorpio_Arm.MotionPlanning(init_goal, 0.2, 2, 45, 450);
     init_goal.pop();
+#if 1
+    Code = RegisterCallback(&CyclicTask, &Scorpio_Arm);
     
-    //Code = RegisterCallback(&CyclicTask, &Scorpio_Arm);
+    while (1)
+    {
+        if (Scorpio_Arm.break_flag == true)
+        {
+            break;
+        }
+        Sleep(10);
+    }
     
-
+#endif
 #if 0
 #pragma region PowerAxis
     // Disable the axis

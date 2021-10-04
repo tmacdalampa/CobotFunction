@@ -14,6 +14,63 @@ Kinematics::~Kinematics(void)
     delete dh;
 }
 
+KinRes Kinematics::PtSetter(queue<array<double, AXISNUM>> init_goal, array<double, AXISNUM> axis_deg, array<double, AXISNUM>& fstart_pose, array<double, AXISNUM>& fend_pose)
+{
+    Matrix4d T06;
+    FK_R(axis_deg, T06);
+    Matrix3d R06;
+    R06(0, 0) = T06(0, 0); R06(0, 1) = T06(0, 1); R06(0, 2) = T06(0, 2);
+    R06(1, 0) = T06(1, 0); R06(1, 1) = T06(1, 1); R06(1, 2) = T06(1, 2);
+    R06(2, 0) = T06(2, 0); R06(2, 1) = T06(2, 1); R06(2, 2) = T06(2, 2);
+    
+    Matrix3d R_start, R_end;
+    ABC2RT(init_goal.front()[3], init_goal.front()[4], init_goal.front()[5], R_start);
+    ABC2RT(init_goal.back()[3], init_goal.back()[4], init_goal.back()[5], R_end);
+    
+    Matrix3d fR_start = R06 * R_start;
+    Matrix3d fR_end = R06 * R_end;
+    //cout << "fR_start = " << fR_start << endl;
+    //cout << "fR_end = " << fR_end << endl;
+
+    array<double, 3> start_pose;
+    array<double, 3> end_pose;
+    RT2ABC(start_pose, fR_start);
+    RT2ABC(end_pose, fR_start);
+    //cout << "start_pose = " << start_pose[0] << ", " << start_pose[1] << ", " << start_pose[2] << endl;
+    //cout << "end_pose = " << end_pose[0] << ", " << end_pose[1] << ", " << end_pose[2] << endl;
+
+    Vector4d start_point, end_point;
+    start_point << init_goal.front()[0], init_goal.front()[1], init_goal.front()[2], 1;
+    end_point << init_goal.back()[0], init_goal.back()[1], init_goal.back()[2], 1;
+    Vector4d fstart_point, fend_point;
+    fstart_point = T06 * start_point;
+    fend_point = T06 * end_point;
+    //cout << fstart_point << endl;
+    //cout << fend_point << endl;
+    for (int i = 0; i < 3; i++)
+    {
+        fstart_pose[i] = fstart_point[i];
+        fend_pose[i] = fend_point[i];
+    }
+    for (int i = 3; i < 6; i++)
+    {
+        fstart_pose[i] = start_pose[i-3];
+        fend_pose[i] = end_pose[i-3];
+    }
+    /*
+    for (int i = 0; i < 6; i++)
+    {
+        cout << fstart_pose[i] << endl;
+        
+    }
+    for (int i = 0; i < 6; i++)
+    {
+        cout << fend_pose[i] << endl;
+    }
+    */
+    return KinRes::SUCCEED;
+}
+
 Matrix4d Kinematics::GetTFMatrix(double axis_deg, int id)
 {
     Matrix4d out_T;
@@ -44,7 +101,7 @@ Matrix4d Kinematics::GetTFMatrix(double axis_deg, int id)
     return out_T;
 }
 
-KinRes Kinematics::FK(array<double, AXISNUM>& axis_deg, array<double, AXISNUM>& robot_pose)
+KinRes Kinematics::FK(array<double, AXISNUM> axis_deg, array<double, AXISNUM>& robot_pose)
 {
     _T01 = GetTFMatrix(axis_deg[0], 1);
     _T12 = GetTFMatrix(axis_deg[1], 2);
@@ -63,7 +120,7 @@ KinRes Kinematics::FK(array<double, AXISNUM>& axis_deg, array<double, AXISNUM>& 
     return KinRes::SUCCEED;
 }
 
-KinRes Kinematics::FK_R(array<double, AXISNUM>& axis_deg, Matrix4d& T06)
+KinRes Kinematics::FK_R(array<double, AXISNUM> axis_deg, Matrix4d& T06)
 {
     _T01 = GetTFMatrix(axis_deg[0], 1);
     _T12 = GetTFMatrix(axis_deg[1], 2);
@@ -72,7 +129,7 @@ KinRes Kinematics::FK_R(array<double, AXISNUM>& axis_deg, Matrix4d& T06)
     _T45 = GetTFMatrix(axis_deg[4], 5);
     _T56 = GetTFMatrix(axis_deg[5], 6);
     T06 = _T01 * _T12 * _T23 * _T34 * _T45 * _T56;
-    cout << "T06 = " << T06 << endl;
+    //cout << "T06 = " << T06 << endl;
     return KinRes::SUCCEED;
 }
 
@@ -86,22 +143,26 @@ double Kinematics::ChooseNearst(double a, double b, double c)
     return res;
 }
 
-KinRes Kinematics::IK(array<double, 6>& axis_deg, array<double, 6>& robot_pose, array<double, 6>& current_position)
+KinRes Kinematics::IK(array<double, 6>& axis_deg, array<double, 6> robot_pose, array<double, 6> current_position)
 {
-    double roll = robot_pose[3] / RAD2DEG; double pitch = robot_pose[4] / RAD2DEG; double yaw = robot_pose[5] / RAD2DEG;
+    //cout << robot_pose[3] << " , " << robot_pose[4] << " , " << robot_pose[5] << endl;
+    double roll = robot_pose[3] * DEG2RAD; double pitch = robot_pose[4] * DEG2RAD; double yaw = robot_pose[5] * DEG2RAD;
+    //cout << roll << " , " << pitch << " , " << yaw << endl;
+
     double wrist_x = robot_pose[0] - dh->d[5] * (cos(roll) * cos(yaw) * sin(pitch) + sin(roll) * sin(yaw));
     double wrist_y = robot_pose[1] - dh->d[5] * (-cos(yaw) * sin(roll) + cos(roll) * sin(pitch) * sin(yaw));
     double wrist_z = robot_pose[2] - dh->d[5] * cos(pitch) * cos(roll);
+    //cout << wrist_y << " , "<< wrist_x << endl;
     double t1 = atan2(wrist_y, wrist_x);
     double t1_tmp = atan2(-wrist_y, -wrist_x);
-    double axis1_position = ChooseNearst(t1, t1_tmp, current_position[0] / RAD2DEG); //axis 1
-
+    double axis1_position = ChooseNearst(t1, t1_tmp, current_position[0] * DEG2RAD); //axis 1
+    //cout << axis1_position * RAD2DEG << endl;
     double x_dot = wrist_x * cos(axis1_position) + wrist_y * sin(axis1_position);
     double y_dot = wrist_y * cos(axis1_position) - wrist_x * sin(axis1_position);
     double z_dot = (wrist_z - dh->d[0]);
     double t3 = asin((x_dot * x_dot + z_dot * z_dot - dh->a[2] * dh->a[2] - dh->d[3] * dh->d[3]) / (2 * dh->a[2] * dh->d[3]));
     double t3_tmp = PI - t3;
-    double axis3_position = ChooseNearst(t3, t3_tmp, current_position[2] / RAD2DEG); //axis2
+    double axis3_position = ChooseNearst(t3, t3_tmp, current_position[2] * DEG2RAD); //axis3
 
     double f1 = dh->a[2] + dh->d[3] * sin(axis3_position);
     double f2 = -dh->d[3] * cos(axis3_position);
@@ -116,7 +177,9 @@ KinRes Kinematics::IK(array<double, 6>& axis_deg, array<double, 6>& robot_pose, 
         {
             double t2 = atan2(u, (x_dot + f2 * u) / f1);
             double t2_tmp = atan2(u_tmp, (x_dot + f2 * u_tmp) / f1);
-            axis2_position = ChooseNearst(t2, t2_tmp, current_position[1] / RAD2DEG);
+            //cout << t2 << " , " << t2_tmp << " , " << current_position[1] * DEG2RAD << endl;
+            axis2_position = ChooseNearst(t2, t2_tmp, current_position[1] * DEG2RAD);
+            //cout << axis2_position << endl;
         }
     }
 
@@ -153,24 +216,25 @@ KinRes Kinematics::IK(array<double, 6>& axis_deg, array<double, 6>& robot_pose, 
         axis6_position = axis4_position;
     }
 
-    axis_deg[0] = axis1_position * RAD2DEG;
+    axis_deg[0] = (axis1_position * RAD2DEG);
     axis_deg[1] = (axis2_position * RAD2DEG);
     axis_deg[2] = (axis3_position * RAD2DEG);
     axis_deg[3] = (axis4_position * RAD2DEG);
     axis_deg[4] = (axis5_position * RAD2DEG);
     axis_deg[5] = (axis6_position * RAD2DEG);
 
-
+#if 0
     cout << axis_deg[0] << " , "
         << axis_deg[1] << " , "
         << axis_deg[2] << " , "
         << axis_deg[3] << " , "
         << axis_deg[4] << " , "
         << axis_deg[5] << " , " << endl;
+#endif
     return KinRes::SUCCEED;
 }
 
-KinRes Kinematics::ABC2RT(double& A, double& B, double& C, Matrix3d& RT)
+KinRes Kinematics::ABC2RT(double A, double B, double C, Matrix3d& RT)
 {
     double roll = A * DEG2RAD;
     double pitch = B * DEG2RAD;
@@ -182,7 +246,7 @@ KinRes Kinematics::ABC2RT(double& A, double& B, double& C, Matrix3d& RT)
     return KinRes::SUCCEED;
 }
 
-KinRes Kinematics::RT2ABC(array<double, 3>& ABC, Matrix3d& RT)
+KinRes Kinematics::RT2ABC(array<double, 3>& ABC, Matrix3d RT)
 {
     double roll, pitch, yaw;
     pitch = atan2(-RT(2, 0), sqrt(RT(0, 0) * RT(0, 0) + RT(1, 0) * RT(1, 0)));
@@ -205,28 +269,3 @@ KinRes Kinematics::RT2ABC(array<double, 3>& ABC, Matrix3d& RT)
     return KinRes::SUCCEED;
 }
 
-double Kinematics::rounding(double num)
-{
-    int index = 5; //to number 5 
-    bool isNegative = false; // whether is negative number or not
-
-    if (num < 0) // if this number is negative, then convert to positive number
-    {
-        isNegative = true;
-        num = -num;
-    }
-
-    if (index >= 0)
-    {
-        int multiplier;
-        multiplier = pow(10, index);
-        num = (int)(num * multiplier + 0.5) / (multiplier * 1.0);
-    }
-
-    if (isNegative) // if this number is negative, then convert to negative number
-    {
-        num = -num;
-    }
-
-    return num;
-}

@@ -19,8 +19,8 @@ struct DHTable
 
 struct HardwareData
 {
-	//array<double, AXISNUM> zero_points = { 57886.1416, 10373.1702, -82.9193, -1005.4330, 21242, 28205 };
-	array<double, AXISNUM> zero_points = { 0,0,0,0,0,0 };
+	array<double, AXISNUM> zero_points = { 57886.1416, -4116.8298, -10552.0523, -1005.4330, 21242, 28205.0408 };
+	//array<double, AXISNUM> zero_points = { 0,0,0,0,0,0 };
 	array<int, AXISNUM> gear_ratios = {161, 161, 121, 161, 161, 161};
 	void ENC2DEG(array<double, AXISNUM>& enc_cnts, array<double, AXISNUM>& axis_deg)
 	{

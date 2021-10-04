@@ -1,5 +1,6 @@
 #include <Eigen>
 #include <iostream>
+#include <queue>
 #include "def.h"
 
 using namespace std;
@@ -13,13 +14,14 @@ private:
 	double ChooseNearst(double a, double b, double c);
 	
 public:
-	
+	KinRes PtSetter(queue<array<double, AXISNUM>> init_goal, array<double, AXISNUM> axis_deg, array<double, AXISNUM>& fstart_pose, array<double, AXISNUM>& fend_pose);
 	Matrix4d GetTFMatrix(double axis_deg, int id);
-	KinRes FK(array<double, AXISNUM>& axis_deg, array<double, AXISNUM>& robot_pose);
-	KinRes IK(array<double, AXISNUM>& axis_deg, array<double, AXISNUM>& robot_pose, array<double, 6>& current_position);
-	KinRes FK_R(array<double, AXISNUM>& axis_deg, Matrix4d& T06);
-	KinRes ABC2RT(double& A, double& B, double& C, Matrix3d& RT);
-	KinRes RT2ABC(array<double, 3>& ABC, Matrix3d& RT);
+	KinRes FK(array<double, AXISNUM> axis_deg, array<double, AXISNUM>& robot_pose);
+	KinRes IK(array<double, AXISNUM>& axis_deg, array<double, AXISNUM> robot_pose, array<double, 6> current_position);
+	KinRes FK_R(array<double, AXISNUM> axis_deg, Matrix4d& T06);
+	KinRes ABC2RT(double A, double B, double C, Matrix3d& RT);
+	KinRes RT2ABC(array<double, 3>& ABC, Matrix3d RT);
+	
 
 	Kinematics();
 	~Kinematics();

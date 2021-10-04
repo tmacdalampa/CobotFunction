@@ -6,6 +6,8 @@ ArmController::ArmController(array<double, AXISNUM> init_position)
 {
 	Kin = new Kinematics;
 	HwTm = new HardwareData;
+	Intp = new Intepolator;
+	HwTm->ENC2DEG(init_position, _init_axis_deg);
 	HwTm->ENC2DEG(init_position, robot_axis_deg);
 	/*
 	cout << robot_axis_deg[0] << ", "
@@ -15,58 +17,81 @@ ArmController::ArmController(array<double, AXISNUM> init_position)
 		<< robot_axis_deg[4] << ", "
 		<< robot_axis_deg[5] << endl;
 	*/
-	Kin->FK(robot_axis_deg, robot_pose);
-	
+	Kin->FK(_init_axis_deg, robot_pose);
+	for (int i = 0; i < AXISNUM; i++)
+	{
+		_fstart_pose[i] = 0;
+		_fend_pose[i] = 0;
+	}
+	break_flag = false;
+	_target_position_q.clear();
+	_target_pose_q.clear();
 }
 ArmController::~ArmController(void)
 {
 	delete Kin;
 	delete HwTm;
+	delete Intp;
 }
 
-void ArmController::MotionPlanning(queue<array<double, 6>> init_goal, double vel_max, double acc_max, double ang_vel_max, double ang_acc_max)
+void ArmController::MotionPlanning(queue<array<double, AXISNUM>> init_goal, double vel_max, double acc_max, double ang_vel_max, double ang_acc_max)
 {
-	Matrix4d T06;
+	Kin->PtSetter(init_goal,_init_axis_deg, _fstart_pose, _fend_pose);
+	Intp->MotionProfileSetter(_fstart_pose, _fend_pose, vel_max, acc_max, ang_vel_max, ang_acc_max);
+	Intp->TargetPoseGenerator(_target_pose_q);
+	//cout << size(_target_pose_q) << endl;
 	
-	Kin->FK_R(robot_axis_deg, T06);
-	Matrix3d R06;
-	R06(0, 0) = T06(0, 0); R06(0, 1) = T06(0, 1); R06(0, 2) = T06(0, 2);
-	R06(1, 0) = T06(1, 0); R06(1, 1) = T06(1, 1); R06(1, 2) = T06(1, 2);
-	R06(2, 0) = T06(2, 0); R06(2, 1) = T06(2, 1); R06(2, 2) = T06(2, 2);
-	//cout << "R06 = " << R06 << endl;
-	Matrix3d R;
-	Kin->ABC2RT(init_goal.front()[3], init_goal.front()[4], init_goal.front()[5], R);
-	Matrix3d R6 = R06 * R;
-	//cout << "R6 = " << R6 << endl;
-	array<double, 3> start_pose;
-	Kin->RT2ABC(start_pose, R6);
+	array<double, AXISNUM> axis_target_position;
+	array<double, AXISNUM> motor_target_position;
+	for (int i = 0; i < size(_target_pose_q); i++)
+	{	
+		Kin->IK(axis_target_position, _target_pose_q[i], robot_axis_deg);
+#if 0
+		cout << axis_target_position[0] << " , "
+			<< axis_target_position[1] << " , "
+			<< axis_target_position[2] << " , "
+			<< axis_target_position[3] << " , "
+			<< axis_target_position[4] << " , "
+			<< axis_target_position[5] << endl;
 
-	//cout <<"start_pose = " << start_pose[0]<<", "<<start_pose[1] << ", " << start_pose[2] << endl;
+#endif
+		HwTm->DEG2ENC(motor_target_position, axis_target_position);
+#if 0
+		cout << motor_target_position[0] << " , "
+			   << motor_target_position[1] << " , "
+			   << motor_target_position[2] << " , "
+		       << motor_target_position[3] << " , "
+		       << motor_target_position[4] << " , "
+	           << motor_target_position[5] << endl;
 
-	Vector4d start_point, end_point;
-	start_point << init_goal.front()[0], init_goal.front()[1], init_goal.front()[2], 1;
-	end_point << init_goal.back()[0], init_goal.back()[1], init_goal.back()[2], 1;
-	Vector4d start_point_end_frame, end_point_end_frame;
-	start_point_end_frame = T06 * start_point;
-	end_point_end_frame = T06 * end_point;
-	cout << start_point_end_frame << endl;
-	cout << end_point_end_frame << endl;
-	double translation = hypot(hypot((end_point_end_frame[0] - start_point_end_frame[0]), (end_point_end_frame[1] - start_point_end_frame[1])), (end_point_end_frame[2] - start_point_end_frame[2]));
-	double rotation = 0;
-	cout << "translation = " << translation << endl;
-
-	double Tat = vel_max / acc_max; double Tar = ang_vel_max / ang_acc_max;
-	double Ta = (Tat > Tar) ? Tat : Tar;
-	cout << "Ta = " << Ta << endl;
-
-	double Tct = (translation / vel_max) - Tat; double Tcr = (rotation / ang_vel_max);
-	double Tc = (Tct > Tcr) ? Tct : Tcr;
-	cout << "Tc = " << Tc << endl;
-
-	double vel = translation / (Ta + Tc);
-	double acc = vel * Ta;
-	double ang_vel = rotation / (Ta + Tc);
-	double ang_acc = ang_vel * Ta;
-	cout << "vel, acc, ang_vel, ang_acc = " << vel << " , " << acc << " , " << ang_vel << " , " << ang_acc << endl;
+#endif
+		_target_position_q.push_back(motor_target_position);
+	}
+	
+	
 }
 
+array<double, AXISNUM> ArmController::UpdateTargetPosition()
+{
+	array<double, AXISNUM> target_position;
+	static array<double, AXISNUM> target_position_pre;
+	if (_target_position_q.empty() == false)
+	{
+		target_position = _target_position_q.front();
+		target_position_pre = target_position;
+		_target_position_q.pop_front();
+		return target_position;
+	}
+	else
+	{
+		break_flag = true;
+		return target_position_pre;
+	}
+	
+}
+
+void ArmController::UpdateRobotStates(array<double, AXISNUM> current_position)
+{
+	HwTm->ENC2DEG(current_position, robot_axis_deg);
+	Kin->FK(robot_axis_deg, robot_pose);
+}
