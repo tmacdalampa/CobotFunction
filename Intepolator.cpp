@@ -15,15 +15,17 @@ Intepolator::Intepolator()
 	_ang_dcc = -_ang_acc;
 	_dt = 0.001;
 
+	_v_now = 0;
+	_v_target = 0;
+	_w_now = 0;
+	_w_target = 0;
+
 	for (int i = 0; i < 3; i++)
 	{
 		_u_trans[i] = 0;
 		_u_rotate[i] = 0;
 
-		_v_now[i] = 0;
-		_v_target[i] = 0;
-		_w_now[i] = 0;
-		_w_target[i] = 0;
+		
 
 		_x_target[i] = 0;
 		_theta_target[i] = 0;
@@ -62,12 +64,16 @@ void Intepolator::MotionProfileSetter(array<double, 6> fstart_pose, array<double
 	//cout << "Tc = " << _Tc << endl;
 
 	_vel = translation / (_Ta + _Tc);
-	_acc = _vel * _Ta;
+	//cout << "_vel = " << _vel << endl;
+	_acc = _vel / _Ta;
+	//cout << "_acc = " << _acc << endl;
 	_ang_vel = rotation / (_Ta + _Tc);
-	_ang_acc = _ang_vel * _Ta;
+	_ang_acc = _ang_vel / _Ta;
 	_dcc = -_acc;
+	//cout << "_dcc = " << _dcc << endl;
 	_ang_dcc = -_ang_acc;
 	_acc_b = (_vel - _vel_pre) / _Ta;
+	//cout << "_acc_b = " << _acc_b << endl;
 	_vel_pre = _vel;
 	_ang_acc_b = (_ang_vel - _ang_vel_pre) / _Ta;
 	_ang_vel_pre = _ang_vel;
@@ -77,7 +83,7 @@ void Intepolator::MotionProfileSetter(array<double, 6> fstart_pose, array<double
 {
 	double a, alpha; 
 	array<double, 6 > target_pose;
-	for (int i = 0; i < 1000 * (_Ta + _Tc); i++)
+	for (int i = 0; i < 1000 * (2*_Ta + _Tc); i++)
 	{
 		if (i < 1000 * _Ta)
 		{
@@ -91,20 +97,19 @@ void Intepolator::MotionProfileSetter(array<double, 6> fstart_pose, array<double
 		}
 		else
 		{
-			a = _acc_b;
-			alpha = _ang_acc_b;
+			a = _dcc;
+			alpha = _ang_dcc;
 		}
+		_v_target = _v_target + a * _dt;
+		_w_target = _w_target + alpha * _dt;
 		for (int i = 0; i < 3; i++)
 		{
-			_v_target[i] = _v_now[i] + a * _dt;
-			_w_target[i] = _w_now[i] + alpha * _dt;
-			_x_target[i] = _x_target[i] + _u_trans[i] * (_v_target[i] * _dt + 0.5 * a * _dt * _dt);
-			_theta_target[i] = _theta_target[i] + _u_rotate[i] * (_w_target[i] * _dt + 0.5 * alpha * _dt * _dt);
-			_v_now[i] = _v_target[i];
-			_w_now[i] = _w_target[i];
+			_x_target[i] = _x_target[i] + _u_trans[i] * (_v_target * _dt + 0.5 * a * _dt * _dt);
+			_theta_target[i] = _theta_target[i] + _u_rotate[i] * (_w_target * _dt + 0.5 * alpha * _dt * _dt);
 			target_pose[i] = rounding(_x_target[i]);
 			target_pose[i + 3] = rounding(_theta_target[i]);
 		}
+		//cout << _v_target << endl;
 		//cout << _u_rotate[0]<<" , " << _u_rotate[1] << " , " << _u_rotate[2] << endl;
 		//cout << target_pose[0] << endl;
 		target_pose_q.push_back(target_pose);
