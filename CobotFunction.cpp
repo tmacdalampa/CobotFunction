@@ -60,8 +60,9 @@ pair<bool, array<double, 6>> LoadPoint()
     static array<double, 6> gp2 = { 0.1, -0.2, 0, A, B, C};
     static int i = 0;
     int j = i % 3;
-    if (j<3)
+    if (i<10)
     {
+        res.first = true;
         switch (j)
         {
         case 0:
@@ -74,9 +75,10 @@ pair<bool, array<double, 6>> LoadPoint()
             res.second = gp2;
             break;
         }
+        //cout << "i = " << i << endl;
     }
     else res.first = false;
-    //cout << "i = " << i << endl;
+    
     i = i + 1;
     return res;
 }
@@ -194,13 +196,24 @@ int _tmain(int argc, _TCHAR* argv[])
     
     ArmController Scorpio_Arm(Init_Position);//input goal and current position in degrees
 
-    Scorpio_Arm.MotionPlanning(init_goal, 0.2, 2, 45, 450);
+    Scorpio_Arm.MotionPlanning(init_goal, 0.1, 0.5, 45, 450);
     init_goal.pop();
 #if 1
     Code = RegisterCallback(&CyclicTask, &Scorpio_Arm);
     
     while (1)
     {
+        if (Scorpio_Arm.load_point_flag == true)
+        {
+            LP_res = LoadPoint();
+            if (LP_res.first == true) //succed read file from file
+            {
+                cout << LP_res.second[0] << "," << LP_res.second[1] << "," << LP_res.second[2] << endl;
+                init_goal.push(LP_res.second);
+                Scorpio_Arm.MotionPlanning(init_goal, 0.1, 0.5, 45, 450);
+                init_goal.pop();
+            }
+        }
         if (Scorpio_Arm.break_flag == true)
         {
             break;

@@ -29,6 +29,8 @@ private:
 
 public:
 	bool break_flag;
+	bool load_point_flag;
+	bool last_point_flag;
 	array<double, AXISNUM> robot_axis_deg;
 	array<double, AXISNUM> robot_pose;
 	ArmController(array<double, AXISNUM> init_position);

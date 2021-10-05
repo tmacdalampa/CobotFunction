@@ -22,7 +22,9 @@ ArmController::ArmController(array<double, AXISNUM> init_position)
 	{
 		_fstart_pose[i] = 0;
 		_fend_pose[i] = 0;
+		//cout << robot_pose[i] << endl;
 	}
+	load_point_flag = true;
 	break_flag = false;
 	_target_position_q.clear();
 	_target_pose_q.clear();
@@ -36,9 +38,10 @@ ArmController::~ArmController(void)
 
 void ArmController::MotionPlanning(queue<array<double, AXISNUM>> init_goal, double vel_max, double acc_max, double ang_vel_max, double ang_acc_max)
 {
+	_target_pose_q.clear();
 	Kin->PtSetter(init_goal,_init_axis_deg, _fstart_pose, _fend_pose);
 	Intp->MotionProfileSetter(_fstart_pose, _fend_pose, vel_max, acc_max, ang_vel_max, ang_acc_max);
-	Intp->TargetPoseGenerator(_target_pose_q);
+	Intp->TargetPoseGeneratorNew(_target_pose_q);
 	//cout << size(_target_pose_q) << endl;
 	
 	array<double, AXISNUM> axis_target_position;
@@ -67,7 +70,7 @@ void ArmController::MotionPlanning(queue<array<double, AXISNUM>> init_goal, doub
 #endif
 		_target_position_q.push_back(motor_target_position);
 	}
-	
+	load_point_flag = false;
 	
 }
 
@@ -80,6 +83,10 @@ array<double, AXISNUM> ArmController::UpdateTargetPosition()
 		target_position = _target_position_q.front();
 		target_position_pre = target_position;
 		_target_position_q.pop_front();
+		if (_target_position_q.size() <= 1000 && last_point_flag == false)
+		{
+			load_point_flag = true;
+		}
 		return target_position;
 	}
 	else

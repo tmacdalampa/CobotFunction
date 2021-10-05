@@ -57,7 +57,7 @@ KinRes Kinematics::PtSetter(queue<array<double, AXISNUM>> init_goal, array<doubl
         fstart_pose[i] = start_pose[i-3];
         fend_pose[i] = end_pose[i-3];
     }
-    /*
+#if 0
     for (int i = 0; i < 6; i++)
     {
         cout << fstart_pose[i] << endl;
@@ -67,7 +67,7 @@ KinRes Kinematics::PtSetter(queue<array<double, AXISNUM>> init_goal, array<doubl
     {
         cout << fend_pose[i] << endl;
     }
-    */
+#endif
     return KinRes::SUCCEED;
 }
 
