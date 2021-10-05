@@ -24,7 +24,7 @@ private:
 	array<double, 2> u;
 public:
 	const int AxisGearRatio[6] = { 161, 161, 121, 161, 161, 101 }; //gear raio
-	const double AxisZeroPoint[6] = { 57886.1416, 10373.1702, -82.9193, -1005.4330, 21242, 28205 };//zero point
+	const double AxisZeroPoint[6] = { 57886.1416, 10373.1702, 338, -1005.4330, 21242, 28205 };//zero point
 	const double AxisZeroPointFake[6] = {0,0,0,0,0,0};//zero point
 	double t;
 	double dt;
