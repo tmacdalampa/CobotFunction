@@ -180,13 +180,17 @@ int _tmain(int argc, _TCHAR* argv[])
 #pragma endregion
     array<double, 6> Init_Position = { 0,90*161,0,0,90*161, 0};
 
-#if 1
+#if 0
     for (int i = 0; i < 6; i++)
     {
         GetAxisPosition(TargetAxis[i], mcActualValue, &Init_Position[i]);
         //RtPrintf("Init position:%d\n", (int)Init_Position[i]);
     }
 #endif
+    array<double, 6> deburring_point = { 0.425, 0, 0.7755, 180, 0, 0 };
+    ArmController Scorpio_Arm(Init_Position);//input goal and current position in degrees
+    Scorpio_Arm.DeburringPtT06Setter(deburring_point);
+    
     pair<bool, array<double, 6>> LP_res = LoadPoint();
     queue<array<double, 6>> init_goal;
     init_goal.push(LP_res.second);
@@ -194,11 +198,9 @@ int _tmain(int argc, _TCHAR* argv[])
     LP_res = LoadPoint();
     init_goal.push(LP_res.second);
     
-    ArmController Scorpio_Arm(Init_Position);//input goal and current position in degrees
-
     Scorpio_Arm.MotionPlanning(init_goal, 0.1, 0.5, 45, 450);
     init_goal.pop();
-#if 1
+#if 0
     Code = RegisterCallback(&CyclicTask, &Scorpio_Arm);
     
     while (1)
@@ -210,6 +212,7 @@ int _tmain(int argc, _TCHAR* argv[])
             {
                 cout << LP_res.second[0] << "," << LP_res.second[1] << "," << LP_res.second[2] << endl;
                 init_goal.push(LP_res.second);
+                //Scorpio_Arm.DeburringPtT06Setter(deburring_point); //not needed right now
                 Scorpio_Arm.MotionPlanning(init_goal, 0.1, 0.5, 45, 450);
                 init_goal.pop();
             }

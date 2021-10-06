@@ -19,13 +19,13 @@ private:
 	HardwareData* HwTm;
 	Intepolator* Intp;
 
-	
-
 	array<double, AXISNUM> _init_axis_deg;
 	array<double, AXISNUM> _fstart_pose;
 	array<double, AXISNUM> _fend_pose;
 	deque<array<double, AXISNUM>> _target_pose_q;
 	deque<array<double, AXISNUM>> _target_position_q;
+	
+	Matrix4d _deburringT06;
 
 public:
 	bool break_flag;
@@ -35,9 +35,10 @@ public:
 	array<double, AXISNUM> robot_pose;
 	ArmController(array<double, AXISNUM> init_position);
 	~ArmController(void);
-	void MotionPlanning(queue<array<double, AXISNUM>> init_goal, double vel, double acc, double ang_vel, double ang_acc);
+	void MotionPlanning(queue<array<double, 6>> init_goal, double vel, double acc, double ang_vel, double ang_acc);
 	array<double, AXISNUM> UpdateTargetPosition();
 	void UpdateRobotStates(array<double, AXISNUM> current_position);
+	void DeburringPtT06Setter(array<double, AXISNUM> deburring_point);
 
 	
 };

@@ -125,96 +125,67 @@ void Intepolator::MotionProfileSetter(array<double, 6> fstart_pose, array<double
 	 double error = 0.0001;
 	 double a, alpha;
 	 array<double, 6> target_pose;
-	 double remain_L = _translation;
-	 double remain_theta = _rotation;
-	 double v_now = 0; double v_target = _vel; double L_dcc = (0.5 * _vel * _vel) / _acc; 
-	 double ang_v_now = 0; double ang_v_target = _ang_vel;
-	 int sign, ang_sign; double ds, dtheta; double v_next, ang_v_next;
+	 array<double, 6> remain_L = { _translation*_u_trans[0], _translation* _u_trans[0], _translation* _u_trans[0], 
+								_rotation*_u_rotate[0], _rotation* _u_rotate[1], _rotation* _u_rotate[2] };
+
+	 array<double, 6> v_now = { 0, 0, 0, 0, 0, 0 };
+	 array<double, 6> v_target = { _vel * _u_trans[0], _vel * _u_trans[0], _vel * _u_trans[0],
+								_ang_vel * _u_rotate[0], _ang_vel * _u_rotate[1], _ang_vel * _u_rotate[2] };
 	 
-	 while (1)
+	 array<double, 6> L_dcc = { _u_trans[0] * (0.5 * _vel * _vel) / _acc, _u_trans[1] * (0.5 * _vel * _vel) / _acc, _u_trans[2] * (0.5 * _vel * _vel) / _acc,
+								_u_rotate[0] * (0.5 * _ang_vel * _ang_vel) / _ang_acc, _u_rotate[1] * (0.5 * _ang_vel * _ang_vel) / _ang_acc, _u_rotate[2] * (0.5 * _ang_vel * _ang_vel) / _ang_acc };
+	
+	 int sign; 
+	 double ds; 
+	 array<double, 6> v_next;
+	 
+	 for (int i = 0; i < 6; i++)
 	 {
-		 if (remain_L <= error)
+		 while (1)
 		 {
-			 ds = remain_L;
-			 dtheta = remain_L;
-			 for (int i = 0; i < 3; i++)
+			 if (remain_L[i] <= error)
 			 {
-				 _x_target[i] = _x_target[i] + _u_trans[i] * ds;
-				 _theta_target[i] = _theta_target[i] + _u_rotate[i] * dtheta;
-				 target_pose[i] = _x_target[i];
-				 target_pose[i + 3] = _theta_target[i];
+				 ds = remain_L[i];
+				 x = x + ds;
+				 remain_L[i] = remain_L[i] - ds;
+				 break;
 			 }
-#if 0
-			 cout << "last" << target_pose[0] << " , "
-				 << target_pose[1] << " , "
-				 << target_pose[2] << " , "
-				 << target_pose[3] << " , "
-				 << target_pose[4] << " , "
-				 << target_pose[5] << endl;
-#endif
-			 //cout << "last = " << target_pose[0] << endl;
-			 //target_pose[3] = 180;  target_pose[4] = 0;  target_pose[5] = 0;
+			 if (remain_L[i] <= L_dcc[i]) //time to dcc
+			 {
+				 v_target[i] = 0;
+
+			 }
+
+			 if (v_now[i] != v_target[i]) //acc or dcc
+			 {
+				 if (v_now[i] > v_target[i]) sign = -1;
+				 else sign = 1;
+
+
+
+				 v_next[i] = v_now[i] + sign[i] * _acc * _dt;
+
+
+				 if (sign * v_next > sign * v_target)
+				 {
+					 v_next = v_target;
+
+				 }
+
+				 ds = (v_next + v_now) * _dt * 0.5;
+
+				 v_now = v_next;
+
+			 }
+			 else //const vel
+			 {
+				 v_now = v_next;
+				 ds = v_next * _dt;
+			 }
+
 			 remain_L = remain_L - ds;
-			 remain_theta = remain_theta - dtheta;
-			 target_pose_q.push_back(target_pose);
-			 break;
+			 //target_pose_q.push_back(target_pose);
 		 }
-		 if (remain_L <= L_dcc) //time to dcc
-		 {
-			 v_target = 0;
-			 ang_v_target = 0;
-		 }
-
-		 if (v_now != v_target) //acc or dcc
-		 {
-			 if (v_now > v_target) sign = -1;
-			 else sign = 1;
-			 
-			 if (ang_v_now > ang_v_target) ang_sign = -1;
-			 else ang_sign = 1;
-
-			 v_next = v_now + sign * _acc * _dt;
-			 ang_v_next = ang_v_now + ang_sign * _ang_acc * _dt;
-
-			 if (sign * v_next > sign * v_target)
-			 {
-				 v_next = v_target;
-				 ang_v_next = ang_v_target;
-			 }
-
-			 ds = (v_next + v_now) * _dt * 0.5;
-			 dtheta = (ang_v_next + ang_v_now) * _dt * 0.5;
-			 v_now = v_next;
-			 ang_v_now = ang_v_next;
-		 }
-		 else //const vel
-		 {
-			 v_now = v_next;
-			 ds = v_next * _dt;
-			 ang_v_now = ang_v_next;
-			 dtheta = ang_v_next * _dt;
-		 }
-
-		 for (int i = 0; i < 3; i++)
-		 {
-			 _x_target[i] = _x_target[i] + _u_trans[i] * ds;
-			 target_pose[i] = _x_target[i];
-			 _theta_target[i] = _theta_target[i] + _u_rotate[i] * dtheta;
-			 target_pose[i + 3] = _theta_target[i];
-		 }
-		 //cout << target_pose[0] << " , " << target_pose[1] << " , " << target_pose[2] << endl;
-		 //target_pose[3] = 180;  target_pose[4] = 0;  target_pose[5] = 0;
-#if 0
-		 cout << target_pose[0] << " , "
-			 << target_pose[1] << " , "
-			 << target_pose[2] << " , "
-			 << target_pose[3] << " , "
-			 << target_pose[4] << " , "
-			 << target_pose[5] << endl;
-#endif
-		 remain_L = remain_L - ds;
-		 remain_theta = remain_theta - dtheta;
-		 target_pose_q.push_back(target_pose);
 	 }
  }
 
