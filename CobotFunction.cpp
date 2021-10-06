@@ -187,6 +187,9 @@ int _tmain(int argc, _TCHAR* argv[])
         //RtPrintf("Init position:%d\n", (int)Init_Position[i]);
     }
 #endif
+    array<double, 6> deburring_point = { 0.425, 0, 0.7755, 180, 0, 30 };
+    ArmController Scorpio_Arm(Init_Position);//input goal and current position in degrees
+    Scorpio_Arm.DeburringPtT06Setter(deburring_point);
     pair<bool, array<double, 6>> LP_res = LoadPoint();
     queue<array<double, 6>> init_goal;
     init_goal.push(LP_res.second);
@@ -194,8 +197,6 @@ int _tmain(int argc, _TCHAR* argv[])
     LP_res = LoadPoint();
     init_goal.push(LP_res.second);
     
-    ArmController Scorpio_Arm(Init_Position);//input goal and current position in degrees
-
     Scorpio_Arm.MotionPlanning(init_goal, 0.1, 0.5, 45, 450);
     init_goal.pop();
 #if 1
@@ -206,9 +207,10 @@ int _tmain(int argc, _TCHAR* argv[])
         if (Scorpio_Arm.load_point_flag == true)
         {
             LP_res = LoadPoint();
-            if (LP_res.first == true) //succed read file from file
+            if (LP_res.first == true)
             {
-                cout << LP_res.second[0] << "," << LP_res.second[1] << "," << LP_res.second[2] << endl;
+                //cout << LP_res.second[0] << "," << LP_res.second[1] << "," << LP_res.second[2] << endl;
+                Scorpio_Arm.DeburringPtT06Setter(deburring_point);
                 init_goal.push(LP_res.second);
                 Scorpio_Arm.MotionPlanning(init_goal, 0.1, 0.5, 45, 450);
                 init_goal.pop();

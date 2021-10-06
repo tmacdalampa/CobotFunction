@@ -19,7 +19,7 @@ private:
 	HardwareData* HwTm;
 	Intepolator* Intp;
 
-	
+	Matrix4d _deburringT06;
 
 	array<double, AXISNUM> _init_axis_deg;
 	array<double, AXISNUM> _fstart_pose;
@@ -38,6 +38,6 @@ public:
 	void MotionPlanning(queue<array<double, AXISNUM>> init_goal, double vel, double acc, double ang_vel, double ang_acc);
 	array<double, AXISNUM> UpdateTargetPosition();
 	void UpdateRobotStates(array<double, AXISNUM> current_position);
-
+	void DeburringPtT06Setter(array<double, AXISNUM> deburring_point);
 	
 };

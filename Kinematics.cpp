@@ -14,14 +14,14 @@ Kinematics::~Kinematics(void)
     delete dh;
 }
 
-KinRes Kinematics::PtSetter(queue<array<double, AXISNUM>> init_goal, array<double, AXISNUM> axis_deg, array<double, AXISNUM>& fstart_pose, array<double, AXISNUM>& fend_pose)
+KinRes Kinematics::PtSetter(queue<array<double, AXISNUM>> init_goal, Matrix4d deburringT06, array<double, AXISNUM>& fstart_pose, array<double, AXISNUM>& fend_pose)
 {
-    Matrix4d T06;
-    FK_R(axis_deg, T06);
+    //Matrix4d T06;
+    //FK_R(axis_deg, T06);
     Matrix3d R06;
-    R06(0, 0) = T06(0, 0); R06(0, 1) = T06(0, 1); R06(0, 2) = T06(0, 2);
-    R06(1, 0) = T06(1, 0); R06(1, 1) = T06(1, 1); R06(1, 2) = T06(1, 2);
-    R06(2, 0) = T06(2, 0); R06(2, 1) = T06(2, 1); R06(2, 2) = T06(2, 2);
+    R06(0, 0) = deburringT06(0, 0); R06(0, 1) = deburringT06(0, 1); R06(0, 2) = deburringT06(0, 2);
+    R06(1, 0) = deburringT06(1, 0); R06(1, 1) = deburringT06(1, 1); R06(1, 2) = deburringT06(1, 2);
+    R06(2, 0) = deburringT06(2, 0); R06(2, 1) = deburringT06(2, 1); R06(2, 2) = deburringT06(2, 2);
     
     Matrix3d R_start, R_end;
     ABC2RT(init_goal.front()[3], init_goal.front()[4], init_goal.front()[5], R_start);
@@ -43,8 +43,8 @@ KinRes Kinematics::PtSetter(queue<array<double, AXISNUM>> init_goal, array<doubl
     start_point << init_goal.front()[0], init_goal.front()[1], init_goal.front()[2], 1;
     end_point << init_goal.back()[0], init_goal.back()[1], init_goal.back()[2], 1;
     Vector4d fstart_point, fend_point;
-    fstart_point = T06 * start_point;
-    fend_point = T06 * end_point;
+    fstart_point = deburringT06 * start_point;
+    fend_point = deburringT06 * end_point;
     //cout << fstart_point << endl;
     //cout << fend_point << endl;
     for (int i = 0; i < 3; i++)
