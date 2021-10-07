@@ -26,11 +26,14 @@ Intepolator::Intepolator()
 	{
 		_u_trans[i] = 0;
 		_u_rotate[i] = 0;
+		_u_trans_pre[i] = 0;
+		_u_rotate_pre[i] = 0;
 
-		
 
 		_x_target[i] = 0;
 		_theta_target[i] = 0;
+
+		
 	}
 }
 
@@ -42,7 +45,7 @@ void Intepolator::MotionProfileSetter(array<double, 6> fstart_pose, array<double
 {
 	_translation = rounding(hypot(hypot((fend_pose[0] - fstart_pose[0]), (fend_pose[1] - fstart_pose[1])), (fend_pose[2] - fstart_pose[2])));
 	_rotation = rounding(hypot(hypot((fend_pose[3] - fstart_pose[3]), (fend_pose[4] - fstart_pose[4])), (fend_pose[5] - fstart_pose[5])));
-	cout << "translation = " << _translation << endl;
+	//cout << "translation = " << _translation << endl;
 	//cout << "rotation = " << rotation << endl;
 	for (int i = 0; i < 3; i++)
 	{
@@ -70,53 +73,82 @@ void Intepolator::MotionProfileSetter(array<double, 6> fstart_pose, array<double
 	_vel = _translation / (_Ta + _Tc);
 	//cout << "_vel = " << _vel << endl;
 	_acc = _vel / _Ta;
-	//cout << "_acc = " << _acc << endl;
+	cout << "_acc = " << _acc << endl;
 	_ang_vel = _rotation / (_Ta + _Tc);
 	_ang_acc = _ang_vel / _Ta;
 	_dcc = -_acc;
 	//cout << "_dcc = " << _dcc << endl;
 	_ang_dcc = -_ang_acc;
-	_acc_b = (_vel - _vel_pre) / _Ta;
+	for (int i = 0; i < 3; i++)
+	{
+		_acc_b[i] = (_u_trans[i]*_vel - _u_trans_pre[i]*_vel_pre) / _Ta;
+		_u_trans_pre[i] = _u_trans[i];
+		_ang_acc_b[i] = (_u_rotate[i] *_ang_vel -_u_rotate_pre[i] * _ang_vel_pre) / _Ta;
+		_u_rotate_pre[i] = _u_rotate[i];
+	}
+	
 	//cout << "_acc_b = " << _acc_b << endl;
 	_vel_pre = _vel;
-	_ang_acc_b = (_ang_vel - _ang_vel_pre) / _Ta;
+	//_ang_acc_b = (_ang_vel - _ang_vel_pre) / _Ta;
 	_ang_vel_pre = _ang_vel;
 }
 
- void Intepolator::TargetPoseGenerator(deque<array<double, 6>>& target_pose_q)
+void Intepolator::TargetPoseGenerator(deque<array<double, 6>>& target_pose_q)
 {
+	double ds, dtheta;
 	double a, alpha; 
 	array<double, 6 > target_pose;
 	for (int i = 0; i < 1000 * (2*_Ta + _Tc); i++)
 	{
-		if (i < 1000 * _Ta)
+		if (i < 1000 * _Ta) //acc
 		{
-			a = _acc_b;
-			alpha = _ang_acc_b;
+			a = _acc;
+			alpha = _ang_acc;
+			_v_target = _v_now + a * _dt;
+			_w_target = _w_now + alpha * _dt;
+			ds = (_v_target + _v_now) * 0.5 * _dt;
+			dtheta = (_w_target + _w_now) * 0.5 * _dt;
+			_v_now = _v_target;
+			_w_now = _w_target;
+			
+			
 		}
 		else if (i >= 1000 * _Ta && i < 1000 * (_Ta + _Tc))
 		{
-			a = 0;
-			alpha = 0;
+			_v_target = _v_now;
+			_w_target = _w_now;
+			ds = _v_target * _dt;
+			dtheta = _w_target * _dt;
+			_v_now = _v_target;
+			_w_now = _w_target;
+			
 		}
 		else
 		{
 			a = _dcc;
 			alpha = _ang_dcc;
+			_v_target = _v_now + a * _dt;
+			_w_target = _w_now + alpha * _dt;
+			ds = (_v_target + _v_now) * 0.5 * _dt;
+			dtheta = (_w_target + _w_now) * 0.5 * _dt;
+			_v_now = _v_target;
+			_w_now = _w_target;
 		}
-		_v_target = _v_target + a * _dt;
-		_w_target = _w_target + alpha * _dt;
+
 		for (int i = 0; i < 3; i++)
 		{
-			_x_target[i] = _x_target[i] + _u_trans[i] * (_v_target * _dt + 0.5*a*_dt*_dt);
-			_theta_target[i] = _theta_target[i] + _u_rotate[i] * (_w_target * _dt+ 0.5 * alpha * _dt * _dt);
-			target_pose[i] = rounding(_x_target[i]);
-			target_pose[i + 3] = rounding(_theta_target[i]);
+			_x_target[i] = _x_target[i] + _u_trans[i]*ds;
+			target_pose[i] = _x_target[i];
+			_theta_target[i] = _theta_target[i] + _u_rotate[i]*dtheta;
+			target_pose[i + 3] = _theta_target[i];
 		}
+		
+		
 		//cout << _v_target << endl;
 		//cout << _u_rotate[0]<<" , " << _u_rotate[1] << " , " << _u_rotate[2] << endl;
-		cout << target_pose[0] << " , " << target_pose[1] << " , " << target_pose[2] << endl;
+		//cout << target_pose[0] << " , " << target_pose[1] << " , " << target_pose[2] << endl;
 		target_pose_q.push_back(target_pose);
+
 	}
 }
 

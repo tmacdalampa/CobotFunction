@@ -187,7 +187,7 @@ int _tmain(int argc, _TCHAR* argv[])
         //RtPrintf("Init position:%d\n", (int)Init_Position[i]);
     }
 #endif
-    array<double, 6> deburring_point = { 0.425, 0, 0.7755, 180, 0, 30 };
+    array<double, 6> deburring_point = { 0.425, 0, 0.7755, 180, 0, 0 };
     ArmController Scorpio_Arm(Init_Position);//input goal and current position in degrees
     Scorpio_Arm.DeburringPtT06Setter(deburring_point);
     pair<bool, array<double, 6>> LP_res = LoadPoint();
