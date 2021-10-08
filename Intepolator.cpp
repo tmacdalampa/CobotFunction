@@ -1,7 +1,12 @@
 #include "Intepolator.h"
 
-Intepolator::Intepolator()
+Intepolator::Intepolator(array<double, 6> robot_pose)
 {
+	for (int i = 0; i < 6; i++)
+	{
+		cout << robot_pose[i] << endl;
+	}
+
 	_translation = 0;
 	_rotation = 0;
 	_Ta = 0;
@@ -17,10 +22,7 @@ Intepolator::Intepolator()
 	_ang_dcc = -_ang_acc;
 	_dt = 0.001;
 
-	_v_now = 0;
-	_v_target = 0;
-	_w_now = 0;
-	_w_target = 0;
+	
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -28,10 +30,14 @@ Intepolator::Intepolator()
 		_u_rotate[i] = 0;
 		_u_trans_pre[i] = 0;
 		_u_rotate_pre[i] = 0;
+		
+		_x_target[i] = robot_pose[i];
+		_theta_target[i] = robot_pose[i+3];
 
-
-		_x_target[i] = 0;
-		_theta_target[i] = 0;
+		_v_now[i] = 0;
+		_v_target[i] = 0;
+		_w_now[i] = 0;
+		_w_target[i] = 0;
 
 		
 	}
@@ -55,9 +61,7 @@ void Intepolator::MotionProfileSetter(array<double, 6> fstart_pose, array<double
 		if (_rotation == 0) _u_rotate[i] = 0;
 		else _u_rotate[i] = (fend_pose[i + 3] - fstart_pose[i + 3]) / _rotation;
 		
-		_x_target[i] = fstart_pose[i];
 		
-		_theta_target[i] = fstart_pose[i + 3];
 		
 	}
 	//cout << "_x_target = " << _x_target[0] << " , " << _x_target[1] << " , " << _x_target[2] << endl;
@@ -73,7 +77,7 @@ void Intepolator::MotionProfileSetter(array<double, 6> fstart_pose, array<double
 	_vel = _translation / (_Ta + _Tc);
 	//cout << "_vel = " << _vel << endl;
 	_acc = _vel / _Ta;
-	cout << "_acc = " << _acc << endl;
+	//cout << "_acc = " << _acc << endl;
 	_ang_vel = _rotation / (_Ta + _Tc);
 	_ang_acc = _ang_vel / _Ta;
 	_dcc = -_acc;
@@ -82,8 +86,8 @@ void Intepolator::MotionProfileSetter(array<double, 6> fstart_pose, array<double
 	for (int i = 0; i < 3; i++)
 	{
 		_acc_b[i] = (_u_trans[i]*_vel - _u_trans_pre[i]*_vel_pre) / _Ta;
+		_ang_acc_b[i] = (_u_rotate[i] *_ang_vel - _u_rotate_pre[i]*_ang_vel) / _Ta;
 		_u_trans_pre[i] = _u_trans[i];
-		_ang_acc_b[i] = (_u_rotate[i] *_ang_vel -_u_rotate_pre[i] * _ang_vel_pre) / _Ta;
 		_u_rotate_pre[i] = _u_rotate[i];
 	}
 	
@@ -95,60 +99,169 @@ void Intepolator::MotionProfileSetter(array<double, 6> fstart_pose, array<double
 
 void Intepolator::TargetPoseGenerator(deque<array<double, 6>>& target_pose_q)
 {
-	double ds, dtheta;
-	double a, alpha; 
+	array<double, 3> ds, dtheta;
+	array<double, 3> a, alpha; 
 	array<double, 6 > target_pose;
 	for (int i = 0; i < 1000 * (2*_Ta + _Tc); i++)
 	{
 		if (i < 1000 * _Ta) //acc
 		{
-			a = _acc;
-			alpha = _ang_acc;
-			_v_target = _v_now + a * _dt;
-			_w_target = _w_now + alpha * _dt;
-			ds = (_v_target + _v_now) * 0.5 * _dt;
-			dtheta = (_w_target + _w_now) * 0.5 * _dt;
-			_v_now = _v_target;
-			_w_now = _w_target;
+			for (int i = 0; i < 3;i++)
+			{
+				a[i] = _u_trans[i]*_acc;
+				alpha[i] = _u_rotate[i]*_ang_acc;
+				_v_target[i] = _v_now[i] + a[i] * _dt;
+				_w_target[i] = _w_now[i] + alpha[i] * _dt;
+				ds[i] = (_v_target[i] + _v_now[i]) * 0.5 * _dt;
+				dtheta[i] = (_w_target[i] + _w_now[i]) * 0.5 * _dt;
+				_v_now[i] = _v_target[i];
+				_w_now[i] = _w_target[i];
+				
+				_x_target[i] = _x_target[i] + ds[i];
+				target_pose[i] = _x_target[i];
+				_theta_target[i] = _theta_target[i] + dtheta[i];
+				target_pose[i + 3] = _theta_target[i];
+			}
 			
 			
 		}
 		else if (i >= 1000 * _Ta && i < 1000 * (_Ta + _Tc))
 		{
-			_v_target = _v_now;
-			_w_target = _w_now;
-			ds = _v_target * _dt;
-			dtheta = _w_target * _dt;
-			_v_now = _v_target;
-			_w_now = _w_target;
+			for (int i = 0; i < 3;i++)
+			{
+				
+				_v_target[i] = _v_now[i];
+				_w_target[i] = _w_now[i];
+				ds[i] = _v_target[i]  * _dt;
+				dtheta[i] = _w_target[i] * 0.5 * _dt;
+				_v_now[i] = _v_target[i];
+				_w_now[i] = _w_target[i];
+				
+
+				_x_target[i] = _x_target[i] + ds[i];
+				target_pose[i] = _x_target[i];
+				_theta_target[i] = _theta_target[i] + dtheta[i];
+				target_pose[i + 3] = _theta_target[i];
+			}
 			
 		}
 		else
 		{
-			a = _dcc;
-			alpha = _ang_dcc;
-			_v_target = _v_now + a * _dt;
-			_w_target = _w_now + alpha * _dt;
-			ds = (_v_target + _v_now) * 0.5 * _dt;
-			dtheta = (_w_target + _w_now) * 0.5 * _dt;
-			_v_now = _v_target;
-			_w_now = _w_target;
+			for (int i = 0; i < 3;i++)
+			{
+				a[i] = _u_trans[i]*_dcc;
+				alpha[i] = _u_rotate[i]*_dcc;
+				_v_target[i] = _v_now[i] + a[i] * _dt;
+				_w_target[i] = _w_now[i] + alpha[i] * _dt;
+				ds[i] = (_v_target[i] + _v_now[i]) * 0.5 * _dt;
+				dtheta[i] = (_w_target[i] + _w_now[i]) * 0.5 * _dt;
+				_v_now[i] = _v_target[i];
+				_w_now[i] = _w_target[i];
+				
+				_x_target[i] = _x_target[i] + ds[i];
+				target_pose[i] = _x_target[i];
+				_theta_target[i] = _theta_target[i] + dtheta[i];
+				target_pose[i + 3] = _theta_target[i];
+			}
 		}
-
-		for (int i = 0; i < 3; i++)
-		{
-			_x_target[i] = _x_target[i] + _u_trans[i]*ds;
-			target_pose[i] = _x_target[i];
-			_theta_target[i] = _theta_target[i] + _u_rotate[i]*dtheta;
-			target_pose[i + 3] = _theta_target[i];
-		}
-		
 		
 		//cout << _v_target << endl;
 		//cout << _u_rotate[0]<<" , " << _u_rotate[1] << " , " << _u_rotate[2] << endl;
 		//cout << target_pose[0] << " , " << target_pose[1] << " , " << target_pose[2] << endl;
 		target_pose_q.push_back(target_pose);
+	}
+}
 
+void Intepolator::TargetPoseGeneratorBlending(deque<array<double, 6>>& target_pose_q)
+{
+	array<double, 3> ds, dtheta;
+	array<double, 3> a, alpha;
+	array<double, 6 > target_pose;
+	for (int i = 0; i < 1000 * (_Ta + _Tc); i++)
+	{
+		if (i < 1000 * _Ta) //acc
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				a[i] = _acc_b[i];
+				alpha[i] = _ang_acc_b[i];
+				_v_target[i] = _v_now[i] + a[i] * _dt;
+				_w_target[i] = _w_now[i] + alpha[i] * _dt;
+				ds[i] = (_v_target[i] + _v_now[i]) * 0.5 * _dt;
+				dtheta[i] = (_w_target[i] + _w_now[i]) * 0.5 * _dt;
+				_v_now[i] = _v_target[i];
+				_w_now[i] = _w_target[i];
+				//if (i == 1) cout << "blending_part" << _v_now[i] << endl;
+
+				//if (i == 0) cout << "blending_part" << _x_target[i] << endl;
+				//if (i == 0) cout << "blending_part ds" << ds[i] << endl;
+				_x_target[i] = _x_target[i] + ds[i];
+				
+				
+				target_pose[i] = _x_target[i];
+				_theta_target[i] = _theta_target[i] + dtheta[i];
+				target_pose[i + 3] = _theta_target[i];
+			}
+
+
+		}
+		else if (i >= 1000 * _Ta && i < 1000 * (_Ta + _Tc))
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				_v_target[i] = _v_now[i];
+				_w_target[i] = _w_now[i];
+				ds[i] = _v_target[i] * _dt;
+				dtheta[i] = _w_target[i] * 0.5 * _dt;
+				_v_now[i] = _v_target[i];
+				_w_now[i] = _w_target[i];
+				//if (i == 1) cout << " const_part " << _v_now[i] << endl;
+				//if (i == 0) cout << "const_part" << _x_target[i] << endl;
+				//if (i == 0) cout << "const_part ds" << ds[i] << endl;
+				_x_target[i] = _x_target[i] + ds[i];
+				
+
+				target_pose[i] = _x_target[i];
+				_theta_target[i] = _theta_target[i] + dtheta[i];
+				target_pose[i + 3] = _theta_target[i];
+			}
+
+		}
+		//cout << _v_target << endl;
+		//cout << _u_rotate[0]<<" , " << _u_rotate[1] << " , " << _u_rotate[2] << endl;
+		//cout << target_pose[0] << " , " << target_pose[1] << " , " << target_pose[2] << endl;
+		target_pose_q.push_back(target_pose);
+	}
+}
+
+void Intepolator::TargetPoseGeneratorStop(deque<array<double, 6>>& target_pose_q)
+{
+	array<double, 3> ds, dtheta;
+	array<double, 3> a, alpha;
+	array<double, 6 > target_pose;
+	for (int i = 0; i < 1000 * _Ta; i++)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			a[i] = _u_trans[i] * _dcc;
+			alpha[i] = _u_rotate[i] * _ang_dcc;
+			_v_target[i] = _v_now[i] + a[i] * _dt;
+			_w_target[i] = _w_now[i] + alpha[i] * _dt;
+			ds[i] = (_v_target[i] + _v_now[i]) * 0.5 * _dt;
+			dtheta[i] = (_w_target[i] + _w_now[i]) * 0.5 * _dt;
+			_v_now[i] = _v_target[i];
+			_w_now[i] = _w_target[i];
+			//if (i == 0) cout << _v_now[i] << endl;
+
+			_x_target[i] = _x_target[i] + ds[i];
+			target_pose[i] = _x_target[i];
+			_theta_target[i] = _theta_target[i] + dtheta[i];
+			target_pose[i + 3] = _theta_target[i];
+	    }
+		//cout << _v_target << endl;
+		//cout << _u_rotate[0]<<" , " << _u_rotate[1] << " , " << _u_rotate[2] << endl;
+		//cout << target_pose[0] << " , " << target_pose[1] << " , " << target_pose[2] << endl;
+		target_pose_q.push_back(target_pose);
 	}
 }
 

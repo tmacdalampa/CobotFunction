@@ -1,10 +1,10 @@
 //////////////////////////////////////////////////////////////////
 //
-// CobotFunction.h - header file
+// Teleop.h - header file
 //
 // This file was generated using the RTX64 Application Template for Visual Studio.
 //
-// Created: 7/20/2021 5:05:53 PM 
+// Created: 10/7/2021 5:04:27 PM 
 // User: KINGSTAR_RTOS
 //
 //////////////////////////////////////////////////////////////////
@@ -28,18 +28,14 @@
 #include <windows.h>
 #include <tchar.h>
 #include <rtapi.h>    // RTX64 APIs that can be used in real-time and Windows applications.
-
-#include "ArmController.h"
-#include <utility>
-#include <array>
-#include <vector>
-#include <iostream>
-
 #include "common.h"
+
+
 
 #ifdef UNDER_RTSS
 #include <rtssapi.h>  // RTX64 APIs that can only be used in real-time applications.
 #endif // UNDER_RTSS
 
-#include "ksapi.h"
-#include "ksmotion.h"
+
+
+  

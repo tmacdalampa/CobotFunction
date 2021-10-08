@@ -4,7 +4,7 @@
   <!--                                                                                 -->
   <!-- This file was generated using the RTX64 Application Template for Visual Studio. -->
   <!--                                                                                 -->
-  <!-- Created: 7/20/2021 5:05:53 PM                                                 -->
+  <!-- Created: 10/7/2021 5:04:27 PM                                                 -->
   <!-- User: KINGSTAR_RTOS                                                                      -->
   <!--                                                                                 -->
   <!--*********************************************************************************-->
@@ -41,18 +41,11 @@
   <!--                             -->
   <!-- **************************  -->
   <ItemGroup>
-    <ClInclude Include="ArmController.h" />
-    <ClInclude Include="CobotFunction.h" />
     <ClInclude Include="common.h" />
-    <ClInclude Include="def.h" />
-    <ClInclude Include="Intepolator.h" />
-    <ClInclude Include="Kinematics.h" />
+    <ClInclude Include="Teleop.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ArmController.cpp" />
-    <ClCompile Include="CobotFunction.cpp" />
-    <ClCompile Include="Intepolator.cpp" />
-    <ClCompile Include="Kinematics.cpp" />
+    <ClCompile Include="Teleop.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -63,8 +56,8 @@
   <!--                             -->
   <!-- **************************  -->
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{E0B19889-11F2-4020-9BD2-334CD98E7810}</ProjectGuid>
-    <RootNamespace>CobotFunction</RootNamespace>
+    <ProjectGuid>{AB68085D-24DE-4434-BC2E-9CE758E6E016}</ProjectGuid>
+    <RootNamespace>Teleop</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
@@ -148,11 +141,9 @@
   <!-- Add .rtdll extension to RtssDebug and RtssRelease -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RtssDebug|x64'">
     <TargetExt>.rtss</TargetExt>
-    <IncludePath>./Eigen/;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RtssRelease|x64'">
     <TargetExt>.rtss</TargetExt>
-    <IncludePath>./Eigen/;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <!-- Turn off Manifest and Incremental Linker for RTSS -->
   <PropertyGroup>
@@ -218,7 +209,7 @@
       <Message>RTX64 StampTool</Message>
     </PostBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(RTX64SDKDir4)include;$(KINGSTARSDKDir4)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(RTX64SDKDir4)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/openmp- /Gs99999 /Gu %(AdditionalOptions)</AdditionalOptions>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -238,8 +229,8 @@
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>startupCRT.lib;libcmt.lib;libcpmt.lib;libucrt.lib;libvcruntime.lib;rtx_rtss.lib;ksapi_rtss.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(RTX64SDKDir4)lib\$(Rtx64Platform);$(KINGSTARSDKDir4)lib\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>startupCRT.lib;libcmt.lib;libcpmt.lib;libucrt.lib;libvcruntime.lib;rtx_rtss.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(RTX64SDKDir4)lib\$(Rtx64Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Driver>Driver</Driver>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <EnableUAC>false</EnableUAC>
@@ -263,7 +254,7 @@
       <Message>RTX64 StampTool</Message>
     </PostBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(RTX64SDKDir4)include;$(KINGSTARSDKDir4)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(RTX64SDKDir4)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/openmp- /Gs99999 /Gu %(AdditionalOptions)</AdditionalOptions>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -282,8 +273,8 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>startupCRT.lib;libcmtd.lib;libcpmtd.lib;libucrtd.lib;libvcruntimed.lib;rtx_rtss.lib;ksapi_rtss.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(RTX64SDKDir4)lib\$(Rtx64Platform);$(KINGSTARSDKDir4)lib\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>startupCRT.lib;libcmtd.lib;libcpmtd.lib;libucrtd.lib;libvcruntimed.lib;rtx_rtss.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(RTX64SDKDir4)lib\$(Rtx64Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Driver>Driver</Driver>
       <EnableUAC>false</EnableUAC>
       <EntryPointSymbol>_RtapiProcessEntryCRT</EntryPointSymbol>

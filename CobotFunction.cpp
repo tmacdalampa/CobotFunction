@@ -84,6 +84,21 @@ pair<bool, array<double, 6>> LoadPoint()
 }
 int _tmain(int argc, _TCHAR* argv[])
 {
+#if 0
+    PRTCONSUMERCSB pSharedMemory = NULL;
+    HANDLE hShCSB = NULL;
+    bool bDone = false;
+    
+    // Create the shared memory region used to communicate with the user-space producer.
+    hShCSB = RtCreateSharedMemory(SHM_MAP_ALL_ACCESS, 0, sizeof(RTCONSUMERCSB), SharedMemoryName, (void**)&pSharedMemory);
+
+    if (hShCSB == NULL)
+    {
+        DWORD error = GetLastError();
+        RtPrintf("RtConsumer: Failed to create shared memory region: error = %d\n", error);
+        return 1;
+    }
+#endif
 #if 1
     SlaveStatus axis = { 0 };
 
@@ -187,7 +202,8 @@ int _tmain(int argc, _TCHAR* argv[])
         //RtPrintf("Init position:%d\n", (int)Init_Position[i]);
     }
 #endif
-    array<double, 6> deburring_point = { 0.425, 0, 0.7755, 180, 0, 0 };
+    array<double, 6> deburring_point = { 0.425, 0, 0.7755, 180, 0, 30 };
+    bool isBlending = false;
     ArmController Scorpio_Arm(Init_Position);//input goal and current position in degrees
     Scorpio_Arm.DeburringPtT06Setter(deburring_point);
     pair<bool, array<double, 6>> LP_res = LoadPoint();
@@ -197,7 +213,7 @@ int _tmain(int argc, _TCHAR* argv[])
     LP_res = LoadPoint();
     init_goal.push(LP_res.second);
     
-    Scorpio_Arm.MotionPlanning(init_goal, 0.1, 0.5, 45, 450);
+    Scorpio_Arm.MotionPlanning(init_goal, 0.1, 0.1, 45, 450, isBlending);
     init_goal.pop();
 #if 1
     Code = RegisterCallback(&CyclicTask, &Scorpio_Arm);
@@ -212,8 +228,14 @@ int _tmain(int argc, _TCHAR* argv[])
                 //cout << LP_res.second[0] << "," << LP_res.second[1] << "," << LP_res.second[2] << endl;
                 Scorpio_Arm.DeburringPtT06Setter(deburring_point);
                 init_goal.push(LP_res.second);
-                Scorpio_Arm.MotionPlanning(init_goal, 0.1, 0.5, 45, 450);
+                Scorpio_Arm.MotionPlanning(init_goal, 0.1, 0.1, 45, 450, isBlending);
                 init_goal.pop();
+            }
+            else
+            {
+                if (isBlending == true) Scorpio_Arm.MotionPlanningStop();
+
+                Scorpio_Arm.last_point_flag = true;
             }
         }
         if (Scorpio_Arm.break_flag == true)
@@ -261,6 +283,9 @@ int _tmain(int argc, _TCHAR* argv[])
 #pragma endregion
     //End:
     RtPrintf("Basic Sample ended\n");
+    //RtCloseHandle(hShCSB);
 
+    //RtPrintf("RtConsumer: Process exiting\n");
+    //ExitProcess(0);
     return 0;
 }

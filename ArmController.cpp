@@ -4,10 +4,15 @@ using namespace Eigen;
 
 ArmController::ArmController(array<double, AXISNUM> init_position)
 {
-	Kin = new Kinematics;
 	HwTm = new HardwareData;
-	Intp = new Intepolator;
 	HwTm->ENC2DEG(init_position, _init_axis_deg);
+	
+	
+	Kin = new Kinematics;
+	Kin->FK(_init_axis_deg, robot_pose);
+
+	
+	Intp = new Intepolator(robot_pose);
 	HwTm->ENC2DEG(init_position, robot_axis_deg);
 	/*
 	cout << robot_axis_deg[0] << ", "
@@ -17,15 +22,18 @@ ArmController::ArmController(array<double, AXISNUM> init_position)
 		<< robot_axis_deg[4] << ", "
 		<< robot_axis_deg[5] << endl;
 	*/
-	Kin->FK(_init_axis_deg, robot_pose);
+	
 	for (int i = 0; i < AXISNUM; i++)
 	{
 		_fstart_pose[i] = 0;
 		_fend_pose[i] = 0;
 		//cout << robot_pose[i] << endl;
 	}
+
 	load_point_flag = true;
+	last_point_flag = false;
 	break_flag = false;
+
 	_target_position_q.clear();
 	_target_pose_q.clear();
 }
@@ -36,12 +44,20 @@ ArmController::~ArmController(void)
 	delete Intp;
 }
 
-void ArmController::MotionPlanning(queue<array<double, AXISNUM>> init_goal, double vel_max, double acc_max, double ang_vel_max, double ang_acc_max)
+void ArmController::MotionPlanning(queue<array<double, AXISNUM>> init_goal, double vel_max, double acc_max, double ang_vel_max, double ang_acc_max, bool blending)
 {
 	_target_pose_q.clear();
 	Kin->PtSetter(init_goal, _deburringT06, _fstart_pose, _fend_pose);
 	Intp->MotionProfileSetter(_fstart_pose, _fend_pose, vel_max, acc_max, ang_vel_max, ang_acc_max);
-	Intp->TargetPoseGeneratorNew(_target_pose_q);
+	switch (blending)
+	{
+	case false:
+		Intp->TargetPoseGenerator(_target_pose_q);
+		break;
+	case true:
+		Intp->TargetPoseGeneratorBlending(_target_pose_q);
+
+	}
 	//cout << size(_target_pose_q) << endl;
 	
 	array<double, AXISNUM> axis_target_position;
@@ -72,6 +88,40 @@ void ArmController::MotionPlanning(queue<array<double, AXISNUM>> init_goal, doub
 	}
 	load_point_flag = false;
 	
+}
+
+void ArmController::MotionPlanningStop()
+{
+	_target_pose_q.clear();
+	Intp->TargetPoseGeneratorStop(_target_pose_q);
+	array<double, AXISNUM> axis_target_position;
+	array<double, AXISNUM> motor_target_position;
+	for (int i = 0; i < size(_target_pose_q); i++)
+	{
+		Kin->IK(axis_target_position, _target_pose_q[i], robot_axis_deg);
+#if 0
+		cout << axis_target_position[0] << " , "
+			<< axis_target_position[1] << " , "
+			<< axis_target_position[2] << " , "
+			<< axis_target_position[3] << " , "
+			<< axis_target_position[4] << " , "
+			<< axis_target_position[5] << endl;
+
+#endif
+		HwTm->DEG2ENC(motor_target_position, axis_target_position);
+#if 0
+		cout << motor_target_position[0] << " , "
+			<< motor_target_position[1] << " , "
+			<< motor_target_position[2] << " , "
+			<< motor_target_position[3] << " , "
+			<< motor_target_position[4] << " , "
+			<< motor_target_position[5] << endl;
+
+#endif
+		_target_position_q.push_back(motor_target_position);
+	}
+	last_point_flag = true;
+	load_point_flag = false;
 }
 
 array<double, AXISNUM> ArmController::UpdateTargetPosition()
