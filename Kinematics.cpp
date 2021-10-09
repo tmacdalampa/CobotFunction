@@ -16,7 +16,7 @@ Kinematics::~Kinematics(void)
 
 KinRes Kinematics::PtSetter(queue<array<double, AXISNUM>> init_goal, Matrix4d deburringT06, array<double, AXISNUM>& fstart_pose, array<double, AXISNUM>& fend_pose)
 {
-    //Matrix4d T06;
+    //Matrix4d deburringT06_pre;
     //FK_R(axis_deg, T06);
     Matrix3d R06;
     R06(0, 0) = deburringT06(0, 0); R06(0, 1) = deburringT06(0, 1); R06(0, 2) = deburringT06(0, 2);
@@ -57,7 +57,8 @@ KinRes Kinematics::PtSetter(queue<array<double, AXISNUM>> init_goal, Matrix4d de
         fstart_pose[i] = start_pose[i-3];
         fend_pose[i] = end_pose[i-3];
     }
-#if 0
+#if 1
+    cout << "==========================" << endl;
     for (int i = 0; i < 6; i++)
     {
         cout << fstart_pose[i] << endl;
@@ -67,6 +68,7 @@ KinRes Kinematics::PtSetter(queue<array<double, AXISNUM>> init_goal, Matrix4d de
     {
         cout << fend_pose[i] << endl;
     }
+    cout << "+++++++++++++++++++++++++++" << endl;
 #endif
     return KinRes::SUCCEED;
 }

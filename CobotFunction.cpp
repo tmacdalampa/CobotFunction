@@ -50,7 +50,7 @@ int CyclicTask(PVOID Context)
     return 0;
 }
 
-pair<bool, array<double, 6>> LoadPoint()
+pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
 {
     double A, B, C; //relative roll pitch yaw as init pose
     A = 0; B = 0; C = 0;
@@ -60,13 +60,23 @@ pair<bool, array<double, 6>> LoadPoint()
     static array<double, 6> gp2 = { 0.1, -0.2, 0, A, B, C};
     static int i = 0;
     int j = i % 3;
-    if (i<10)
+    if (i<7)
     {
         res.first = true;
         switch (j)
         {
         case 0:
             res.second = gp0;
+            if (i != 0)
+            {
+                deburring_point[5] = 30;
+                cout << deburring_point[0] << " , "
+                    << deburring_point[1] << " , "
+                    << deburring_point[2] << " , "
+                    << deburring_point[3] << " , "
+                    << deburring_point[4] << " , "
+                    <<deburring_point[5] << endl;
+            }
             break;
         case 1:
             res.second = gp1;
@@ -202,15 +212,16 @@ int _tmain(int argc, _TCHAR* argv[])
         //RtPrintf("Init position:%d\n", (int)Init_Position[i]);
     }
 #endif
-    array<double, 6> deburring_point = { 0.425, 0, 0.7755, 180, 0, 30 };
+    array<double, 6> deburring_point = { 0.425, 0, 0.7755, 180, 0, 0 };
+    
     bool isBlending = false;
     ArmController Scorpio_Arm(Init_Position);//input goal and current position in degrees
     Scorpio_Arm.DeburringPtT06Setter(deburring_point);
-    pair<bool, array<double, 6>> LP_res = LoadPoint();
+    pair<bool, array<double, 6>> LP_res = LoadPoint(deburring_point);
     queue<array<double, 6>> init_goal;
     init_goal.push(LP_res.second);
 
-    LP_res = LoadPoint();
+    LP_res = LoadPoint(deburring_point);
     init_goal.push(LP_res.second);
     
     Scorpio_Arm.MotionPlanning(init_goal, 0.1, 0.1, 45, 450, isBlending);
@@ -222,7 +233,7 @@ int _tmain(int argc, _TCHAR* argv[])
     {
         if (Scorpio_Arm.load_point_flag == true)
         {
-            LP_res = LoadPoint();
+            LP_res = LoadPoint(deburring_point);
             if (LP_res.first == true)
             {
                 //cout << LP_res.second[0] << "," << LP_res.second[1] << "," << LP_res.second[2] << endl;

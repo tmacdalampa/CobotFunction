@@ -2,10 +2,6 @@
 
 Intepolator::Intepolator(array<double, 6> robot_pose)
 {
-	for (int i = 0; i < 6; i++)
-	{
-		cout << robot_pose[i] << endl;
-	}
 
 	_translation = 0;
 	_rotation = 0;
