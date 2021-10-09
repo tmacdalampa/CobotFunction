@@ -44,11 +44,40 @@ ArmController::~ArmController(void)
 	delete Intp;
 }
 
-void ArmController::MotionPlanning(queue<array<double, AXISNUM>> init_goal, double vel_max, double acc_max, double ang_vel_max, double ang_acc_max, bool blending)
+void ArmController::fStartPoseSetter()
+{
+	/*
+	for (int i = 0; i < AXISNUM; i++)
+	{
+		_fstart_pose[i] = robot_pose[i];
+	}
+	*/
+	_fstart_pose = { 0.425, 0, 0.7755, 180, 0, 0 };
+}
+
+void ArmController::MotionPlanning(array<double, AXISNUM> goal, double vel_max, double acc_max, double ang_vel_max, double ang_acc_max, bool blending)
 {
 	_target_pose_q.clear();
-	Kin->PtSetter(init_goal, _deburringT06, _fstart_pose, _fend_pose);
+	Kin->PtSetter(goal, _deburringT06, _fend_pose);
+#if 1
+	cout << "==========================" << endl;
+	for (int i = 0; i < 6; i++)
+	{
+		cout << _fstart_pose[i] << endl;
+	}
+	for (int i = 0; i < 6; i++)
+	{
+		cout << _fend_pose[i] << endl;
+	}
+	cout << "+++++++++++++++++++++++++++" << endl;
+#endif
 	Intp->MotionProfileSetter(_fstart_pose, _fend_pose, vel_max, acc_max, ang_vel_max, ang_acc_max);
+	
+	for (int i = 0; i < AXISNUM; i++)
+	{
+		_fstart_pose[i] = _fend_pose[i];
+	}
+
 	switch (blending)
 	{
 	case false:

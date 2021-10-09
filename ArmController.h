@@ -35,10 +35,10 @@ public:
 	array<double, AXISNUM> robot_pose;
 	ArmController(array<double, AXISNUM> init_position);
 	~ArmController(void);
-	void MotionPlanning(queue<array<double, AXISNUM>> init_goal, double vel, double acc, double ang_vel, double ang_acc, bool blending);
+	void MotionPlanning(array<double, AXISNUM> goal, double vel, double acc, double ang_vel, double ang_acc, bool blending);
 	void MotionPlanningStop();
 	array<double, AXISNUM> UpdateTargetPosition();
 	void UpdateRobotStates(array<double, AXISNUM> current_position);
 	void DeburringPtT06Setter(array<double, AXISNUM> deburring_point);
-	
+	void fStartPoseSetter();
 };

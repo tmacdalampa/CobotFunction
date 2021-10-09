@@ -14,7 +14,7 @@ private:
 	double ChooseNearst(double a, double b, double c);
 	
 public:
-	KinRes PtSetter(queue<array<double, AXISNUM>> init_goal, Matrix4d deburringT06, array<double, AXISNUM>& fstart_pose, array<double, AXISNUM>& fend_pose);
+	KinRes PtSetter(array<double, AXISNUM> goal, Matrix4d deburringT06, array<double, AXISNUM>& fend_pose);
 	Matrix4d GetTFMatrix(double axis_deg, int id);
 	KinRes FK(array<double, AXISNUM> axis_deg, array<double, AXISNUM>& robot_pose);
 	KinRes IK(array<double, AXISNUM>& axis_deg, array<double, AXISNUM> robot_pose, array<double, 6> current_position);

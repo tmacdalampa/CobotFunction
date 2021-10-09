@@ -14,7 +14,7 @@ Kinematics::~Kinematics(void)
     delete dh;
 }
 
-KinRes Kinematics::PtSetter(queue<array<double, AXISNUM>> init_goal, Matrix4d deburringT06, array<double, AXISNUM>& fstart_pose, array<double, AXISNUM>& fend_pose)
+KinRes Kinematics::PtSetter(array<double, AXISNUM> goal, Matrix4d deburringT06, array<double, AXISNUM>& fend_pose)
 {
     //Matrix4d deburringT06_pre;
     //FK_R(axis_deg, T06);
@@ -23,53 +23,38 @@ KinRes Kinematics::PtSetter(queue<array<double, AXISNUM>> init_goal, Matrix4d de
     R06(1, 0) = deburringT06(1, 0); R06(1, 1) = deburringT06(1, 1); R06(1, 2) = deburringT06(1, 2);
     R06(2, 0) = deburringT06(2, 0); R06(2, 1) = deburringT06(2, 1); R06(2, 2) = deburringT06(2, 2);
     
-    Matrix3d R_start, R_end;
-    ABC2RT(init_goal.front()[3], init_goal.front()[4], init_goal.front()[5], R_start);
-    ABC2RT(init_goal.back()[3], init_goal.back()[4], init_goal.back()[5], R_end);
+    Matrix3d R_end;
     
-    Matrix3d fR_start = R06 * R_start;
+    ABC2RT(goal[3], goal[4], goal[5], R_end);
+    
+    
     Matrix3d fR_end = R06 * R_end;
     //cout << "fR_start = " << fR_start << endl;
     //cout << "fR_end = " << fR_end << endl;
 
-    array<double, 3> start_pose;
-    array<double, 3> end_pose;
-    RT2ABC(start_pose, fR_start);
-    RT2ABC(end_pose, fR_start);
-    //cout << "start_pose = " << start_pose[0] << ", " << start_pose[1] << ", " << start_pose[2] << endl;
+    array<double, 3> goal_pose;
+    
+    RT2ABC(goal_pose, fR_end);
+
     //cout << "end_pose = " << end_pose[0] << ", " << end_pose[1] << ", " << end_pose[2] << endl;
 
-    Vector4d start_point, end_point;
-    start_point << init_goal.front()[0], init_goal.front()[1], init_goal.front()[2], 1;
-    end_point << init_goal.back()[0], init_goal.back()[1], init_goal.back()[2], 1;
-    Vector4d fstart_point, fend_point;
-    fstart_point = deburringT06 * start_point;
+    Vector4d end_point;
+    
+    end_point << goal[0], goal[1], goal[2], 1;
+    Vector4d fend_point;
+
     fend_point = deburringT06 * end_point;
-    //cout << fstart_point << endl;
+    
     //cout << fend_point << endl;
     for (int i = 0; i < 3; i++)
     {
-        fstart_pose[i] = fstart_point[i];
         fend_pose[i] = fend_point[i];
     }
     for (int i = 3; i < 6; i++)
     {
-        fstart_pose[i] = start_pose[i-3];
-        fend_pose[i] = end_pose[i-3];
+        fend_pose[i] = goal_pose[i-3];
     }
-#if 1
-    cout << "==========================" << endl;
-    for (int i = 0; i < 6; i++)
-    {
-        cout << fstart_pose[i] << endl;
-        
-    }
-    for (int i = 0; i < 6; i++)
-    {
-        cout << fend_pose[i] << endl;
-    }
-    cout << "+++++++++++++++++++++++++++" << endl;
-#endif
+
     return KinRes::SUCCEED;
 }
 
