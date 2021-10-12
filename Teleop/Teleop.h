@@ -28,7 +28,10 @@
 #include <windows.h>
 #include <tchar.h>
 #include <rtapi.h>    // RTX64 APIs that can be used in real-time and Windows applications.
-#include "common.h"
+
+#include <iostream>
+
+#include "shm.h"
 
 
 

@@ -63,7 +63,7 @@ void ArmController::MotionPlanning(array<double, AXISNUM> goal, double vel_max, 
 {
 	_target_pose_q.clear();
 	Kin->PtSetter(goal, _deburringT06, _fend_pose);
-#if 1
+#if 0
 	cout << "==========================" << endl;
 	for (int i = 0; i < 6; i++)
 	{
@@ -89,7 +89,7 @@ void ArmController::MotionPlanning(array<double, AXISNUM> goal, double vel_max, 
 		break;
 	case true:
 		Intp->TargetPoseGeneratorBlending(_target_pose_q);
-
+		break;
 	}
 	//cout << size(_target_pose_q) << endl;
 	

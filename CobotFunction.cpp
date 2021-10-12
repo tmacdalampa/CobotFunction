@@ -61,7 +61,7 @@ pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
     static array<double, 6> gp2 = { 0, 0, 0, A, B, C };
     static int i = 0;
     int j = i % 3;
-    if (i<6)
+    if (i<60)
     {
         res.first = true;
         switch (j)
@@ -75,7 +75,7 @@ pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
             break;
         case 2:
             res.second = gp2;
-            
+            /*
             if (i == 2)
             {
                 deburring_point[3] = 170;
@@ -86,7 +86,7 @@ pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
                     << deburring_point[4] << " , "
                     <<deburring_point[5] << endl;
             }
-            
+            */
             break;
         }
         //cout << "i = " << i << endl;
@@ -120,17 +120,14 @@ int _tmain(int argc, _TCHAR* argv[])
         else	RtPrintf("Created shared memory success!\n");
         pSHM = (pSharedInformation)location;
         pSHM->Run = 1;
-        pSHM->iData = 10;
-        pSHM->iValue = 20;
+        //pSHM->iData = 10;
+        //pSHM->iValue = 20;
         hEvent1 = RtCreateEvent(NULL, false, false, L"TestEvent");
         hSemphone = RtCreateSemaphore(NULL, 0, 1, L"TestSemaphone");
         if (hSemphone == NULL)
             RtPrintf(" Create Semaphone failed\n");
-        if (RtWaitForSingleObject(hEvent1, 1000) == WAIT_OBJECT_0)
-        {
-            RtWprintf(L"iValue= %d , iData= % d , StringBuffer=%s \n", pSHM->iData, pSHM->iValue, pSHM->StringBuffer);
-
-        }
+        //RtWprintf(L"iValue= %d , iData= % d , StringBuffer=%s \n", pSHM->iData, pSHM->iValue, pSHM->StringBuffer);
+        //Sleep(2000);
         /*
         while (pSHM->Run != 0) \
         {
@@ -248,10 +245,15 @@ int _tmain(int argc, _TCHAR* argv[])
 #endif
     array<double, 6> deburring_point = { 0.425, 0, 0.7755, 180, 0, 0 };
     
+    for (int i = 0; i < 6; i++)
+    {
+        pSHM->dbpt[i] = deburring_point[i];
+    }
     bool isBlending = false;
     ArmController Scorpio_Arm(Init_Position);//input goal and current position in degrees
     Scorpio_Arm.DeburringPtT06Setter(deburring_point);
     Scorpio_Arm.fStartPoseSetter(deburring_point);
+    
     pair<bool, array<double, 6>> LP_res = LoadPoint(deburring_point);
     //queue<array<double, 6>> init_goal;
     //init_goal.push(LP_res.second);
@@ -261,6 +263,24 @@ int _tmain(int argc, _TCHAR* argv[])
     
     Scorpio_Arm.MotionPlanning(LP_res.second, 0.1, 0.1, 45, 450, isBlending);
     //init_goal.pop();
+    /*
+    while (pSHM->Run != 0) \
+    {
+        if (RtWaitForSingleObject(hEvent1, 1000) == WAIT_OBJECT_0)
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                test_point[i] = pSHM->dbpt[i];
+            }
+            cout << "x = " << test_point[0] << " , "
+                << "y = " << test_point[1] << " , "
+                << "z = " << test_point[2] << " , "
+                << "roll = " << test_point[3] << " , "
+                << "pitch = " << test_point[4] << " , "
+                << "yaw = " << test_point[5] << endl;
+        }
+    }
+    */
 #if 1
     Code = RegisterCallback(&CyclicTask, &Scorpio_Arm);
     
@@ -268,9 +288,20 @@ int _tmain(int argc, _TCHAR* argv[])
     {
         if (Scorpio_Arm.load_point_flag == true)
         {
+            for (int i = 0; i < 6; i++)
+            {
+                deburring_point[i] = pSHM->dbpt[i];
+            }
+            
             LP_res = LoadPoint(deburring_point);
             if (LP_res.first == true)
             {
+                cout << "x = " << deburring_point[0] << " , "
+                    << "y = " << deburring_point[1] << " , "
+                    << "z = " << deburring_point[2] << " , "
+                    << "roll = " << deburring_point[3] << " , "
+                    << "pitch = " << deburring_point[4] << " , "
+                    << "yaw = " << deburring_point[5] << endl;
                 //cout << LP_res.second[0] << "," << LP_res.second[1] << "," << LP_res.second[2] << endl;
                 Scorpio_Arm.DeburringPtT06Setter(deburring_point);
                 //init_goal.push(LP_res.second);
@@ -328,6 +359,7 @@ int _tmain(int argc, _TCHAR* argv[])
     //}
 #pragma endregion
     //End:
+    //RtWprintf(L"iValue= %d , iData= % d , StringBuffer=%s \n", pSHM->iData, pSHM->iValue, pSHM->StringBuffer);
     RtPrintf("Basic Sample ended\n");
     //RtCloseHandle(hShCSB);
 

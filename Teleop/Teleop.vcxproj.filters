@@ -26,7 +26,7 @@
     <ClInclude Include="Teleop.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="common.h">
+    <ClInclude Include="shm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

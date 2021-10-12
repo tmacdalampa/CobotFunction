@@ -41,7 +41,7 @@
   <!--                             -->
   <!-- **************************  -->
   <ItemGroup>
-    <ClInclude Include="common.h" />
+    <ClInclude Include="shm.h" />
     <ClInclude Include="Teleop.h" />
   </ItemGroup>
   <ItemGroup>
