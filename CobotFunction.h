@@ -35,7 +35,7 @@
 #include <vector>
 #include <iostream>
 
-#include "common.h"
+#include "shm.h"
 
 #ifdef UNDER_RTSS
 #include <rtssapi.h>  // RTX64 APIs that can only be used in real-time applications.

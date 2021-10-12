@@ -78,7 +78,7 @@ pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
             
             if (i == 2)
             {
-                deburring_point[5] = 30;
+                deburring_point[3] = 170;
                 cout << deburring_point[0] << " , "
                     << deburring_point[1] << " , "
                     << deburring_point[2] << " , "
@@ -98,19 +98,49 @@ pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
 }
 int _tmain(int argc, _TCHAR* argv[])
 {
-#if 0
-    PRTCONSUMERCSB pSharedMemory = NULL;
-    HANDLE hShCSB = NULL;
-    bool bDone = false;
+#if 1
+    pSharedInformation pSHM;
+    HANDLE  	hSHM = NULL;
+    HANDLE     hEvent1;
+    HANDLE     hSemphone;
+    static	PVOID	location;
     
     // Create the shared memory region used to communicate with the user-space producer.
-    hShCSB = RtCreateSharedMemory(SHM_MAP_ALL_ACCESS, 0, sizeof(RTCONSUMERCSB), SharedMemoryName, (void**)&pSharedMemory);
-
-    if (hShCSB == NULL)
+    if (!hSHM)
     {
-        DWORD error = GetLastError();
-        RtPrintf("RtConsumer: Failed to create shared memory region: error = %d\n", error);
-        return 1;
+        if (!(hSHM = RtCreateSharedMemory((DWORD)PAGE_READWRITE,
+            (DWORD)0,
+            (DWORD)(sizeof(SharedInformation)),
+            L"sharedspace",
+            (void**)&location)))
+        {
+            RtPrintf("Can't created shared memory!\n");
+
+        }
+        else	RtPrintf("Created shared memory success!\n");
+        pSHM = (pSharedInformation)location;
+        pSHM->Run = 1;
+        pSHM->iData = 10;
+        pSHM->iValue = 20;
+        hEvent1 = RtCreateEvent(NULL, false, false, L"TestEvent");
+        hSemphone = RtCreateSemaphore(NULL, 0, 1, L"TestSemaphone");
+        if (hSemphone == NULL)
+            RtPrintf(" Create Semaphone failed\n");
+        if (RtWaitForSingleObject(hEvent1, 1000) == WAIT_OBJECT_0)
+        {
+            RtWprintf(L"iValue= %d , iData= % d , StringBuffer=%s \n", pSHM->iData, pSHM->iValue, pSHM->StringBuffer);
+
+        }
+        /*
+        while (pSHM->Run != 0) \
+        {
+            if (RtWaitForSingleObject(hEvent1, 1000) == WAIT_OBJECT_0)
+            {
+                RtWprintf(L"iValue= %d , iData= % d , StringBuffer=%s \n", pSHM->iData, pSHM->iValue, pSHM->StringBuffer);
+
+            }
+        }
+        */
     }
 #endif
 #if 1
@@ -301,7 +331,7 @@ int _tmain(int argc, _TCHAR* argv[])
     RtPrintf("Basic Sample ended\n");
     //RtCloseHandle(hShCSB);
 
-    //RtPrintf("RtConsumer: Process exiting\n");
-    //ExitProcess(0);
+    
+    ExitProcess(0);
     return 0;
 }
