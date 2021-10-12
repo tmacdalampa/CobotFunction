@@ -221,7 +221,7 @@ int _tmain(int argc, _TCHAR* argv[])
     bool isBlending = false;
     ArmController Scorpio_Arm(Init_Position);//input goal and current position in degrees
     Scorpio_Arm.DeburringPtT06Setter(deburring_point);
-    Scorpio_Arm.fStartPoseSetter();
+    Scorpio_Arm.fStartPoseSetter(deburring_point);
     pair<bool, array<double, 6>> LP_res = LoadPoint(deburring_point);
     //queue<array<double, 6>> init_goal;
     //init_goal.push(LP_res.second);

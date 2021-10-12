@@ -44,22 +44,26 @@ ArmController::~ArmController(void)
 	delete Intp;
 }
 
-void ArmController::fStartPoseSetter()
+void ArmController::fStartPoseSetter(array<double, AXISNUM> deburring_point)
 {
-	/*
+#if 0
+	_fstart_pose = { 0.425, 0, 0.7755, 180, 0, 0 };
+#else	
 	for (int i = 0; i < AXISNUM; i++)
 	{
-		_fstart_pose[i] = robot_pose[i];
+		_fstart_pose[i] = deburring_point[i];
+		//cout << _fstart_pose[i] << endl;
 	}
-	*/
-	_fstart_pose = { 0.425, 0, 0.7755, 180, 0, 0 };
+#endif
+	
+	
 }
 
 void ArmController::MotionPlanning(array<double, AXISNUM> goal, double vel_max, double acc_max, double ang_vel_max, double ang_acc_max, bool blending)
 {
 	_target_pose_q.clear();
 	Kin->PtSetter(goal, _deburringT06, _fend_pose);
-#if 1
+#if 0
 	cout << "==========================" << endl;
 	for (int i = 0; i < 6; i++)
 	{
@@ -91,9 +95,11 @@ void ArmController::MotionPlanning(array<double, AXISNUM> goal, double vel_max, 
 	
 	array<double, AXISNUM> axis_target_position;
 	array<double, AXISNUM> motor_target_position;
+	//cout << "++++++++++++++++++++++++++++" << endl;
 	for (int i = 0; i < size(_target_pose_q); i++)
 	{	
 		Kin->IK(axis_target_position, _target_pose_q[i], robot_axis_deg);
+		//cout << axis_target_position[5] << endl;
 #if 0
 		cout << axis_target_position[0] << " , "
 			<< axis_target_position[1] << " , "
@@ -115,6 +121,7 @@ void ArmController::MotionPlanning(array<double, AXISNUM> goal, double vel_max, 
 #endif
 		_target_position_q.push_back(motor_target_position);
 	}
+	//cout << "==========================" << endl;
 	load_point_flag = false;
 	
 }

@@ -11,6 +11,7 @@ private:
 	DHTable* dh;
 	Matrix4d _T01, _T12, _T23, _T34, _T45, _T56, _T06;
 	double rounding(double num);
+	double tozero(double num);
 	double ChooseNearst(double a, double b, double c);
 	
 public:

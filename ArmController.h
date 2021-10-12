@@ -40,5 +40,5 @@ public:
 	array<double, AXISNUM> UpdateTargetPosition();
 	void UpdateRobotStates(array<double, AXISNUM> current_position);
 	void DeburringPtT06Setter(array<double, AXISNUM> deburring_point);
-	void fStartPoseSetter();
+	void fStartPoseSetter(array<double, AXISNUM> deburring_point);
 };

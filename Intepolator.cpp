@@ -82,7 +82,7 @@ void Intepolator::MotionProfileSetter(array<double, 6> fstart_pose, array<double
 	for (int i = 0; i < 3; i++)
 	{
 		_acc_b[i] = (_u_trans[i]*_vel - _u_trans_pre[i]*_vel_pre) / _Ta;
-		_ang_acc_b[i] = (_u_rotate[i] *_ang_vel - _u_rotate_pre[i]*_ang_vel) / _Ta;
+		_ang_acc_b[i] = (_u_rotate[i] *_ang_vel - _u_rotate_pre[i]*_ang_vel_pre) / _Ta;
 		_u_trans_pre[i] = _u_trans[i];
 		_u_rotate_pre[i] = _u_rotate[i];
 	}
@@ -129,7 +129,7 @@ void Intepolator::TargetPoseGenerator(deque<array<double, 6>>& target_pose_q)
 				_v_target[i] = _v_now[i];
 				_w_target[i] = _w_now[i];
 				ds[i] = _v_target[i]  * _dt;
-				dtheta[i] = _w_target[i] * 0.5 * _dt;
+				dtheta[i] = _w_target[i]  * _dt;
 				_v_now[i] = _v_target[i];
 				_w_now[i] = _w_target[i];
 				
@@ -146,7 +146,7 @@ void Intepolator::TargetPoseGenerator(deque<array<double, 6>>& target_pose_q)
 			for (int i = 0; i < 3;i++)
 			{
 				a[i] = _u_trans[i]*_dcc;
-				alpha[i] = _u_rotate[i]*_dcc;
+				alpha[i] = _u_rotate[i]*_ang_dcc;
 				_v_target[i] = _v_now[i] + a[i] * _dt;
 				_w_target[i] = _w_now[i] + alpha[i] * _dt;
 				ds[i] = (_v_target[i] + _v_now[i]) * 0.5 * _dt;
@@ -208,7 +208,7 @@ void Intepolator::TargetPoseGeneratorBlending(deque<array<double, 6>>& target_po
 				_v_target[i] = _v_now[i];
 				_w_target[i] = _w_now[i];
 				ds[i] = _v_target[i] * _dt;
-				dtheta[i] = _w_target[i] * 0.5 * _dt;
+				dtheta[i] = _w_target[i] * _dt;
 				_v_now[i] = _v_target[i];
 				_w_now[i] = _w_target[i];
 				//if (i == 1) cout << " const_part " << _v_now[i] << endl;
