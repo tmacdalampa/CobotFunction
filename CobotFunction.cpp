@@ -61,7 +61,7 @@ pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
     static array<double, 6> gp2 = { 0, 0, 0, A, B, C };
     static int i = 0;
     int j = i % 3;
-    if (i<60)
+    if (i<30)
     {
         res.first = true;
         switch (j)
@@ -243,7 +243,7 @@ int _tmain(int argc, _TCHAR* argv[])
         //RtPrintf("Init position:%d\n", (int)Init_Position[i]);
     }
 #endif
-    array<double, 6> deburring_point = { 0.425, 0, 0.7755, 180, 0, 0 };
+    array<double, 6> deburring_point = { 0.425, 0, 0.6385, 180, 0, 0 };
     
     for (int i = 0; i < 6; i++)
     {
@@ -252,7 +252,7 @@ int _tmain(int argc, _TCHAR* argv[])
     bool isBlending = false;
     ArmController Scorpio_Arm(Init_Position);//input goal and current position in degrees
     Scorpio_Arm.DeburringPtT06Setter(deburring_point);
-    Scorpio_Arm.fStartPoseSetter(deburring_point);
+    Scorpio_Arm.fStartPoseSetter();
     
     pair<bool, array<double, 6>> LP_res = LoadPoint(deburring_point);
     //queue<array<double, 6>> init_goal;
@@ -296,12 +296,14 @@ int _tmain(int argc, _TCHAR* argv[])
             LP_res = LoadPoint(deburring_point);
             if (LP_res.first == true)
             {
+                
                 cout << "x = " << deburring_point[0] << " , "
                     << "y = " << deburring_point[1] << " , "
                     << "z = " << deburring_point[2] << " , "
                     << "roll = " << deburring_point[3] << " , "
                     << "pitch = " << deburring_point[4] << " , "
                     << "yaw = " << deburring_point[5] << endl;
+                    
                 //cout << LP_res.second[0] << "," << LP_res.second[1] << "," << LP_res.second[2] << endl;
                 Scorpio_Arm.DeburringPtT06Setter(deburring_point);
                 //init_goal.push(LP_res.second);
@@ -361,7 +363,8 @@ int _tmain(int argc, _TCHAR* argv[])
     //End:
     //RtWprintf(L"iValue= %d , iData= % d , StringBuffer=%s \n", pSHM->iData, pSHM->iValue, pSHM->StringBuffer);
     RtPrintf("Basic Sample ended\n");
-    //RtCloseHandle(hShCSB);
+    RtCloseHandle(hEvent1);
+    RtCloseHandle(hSemphone);
 
     
     ExitProcess(0);

@@ -14,20 +14,13 @@ ArmController::ArmController(array<double, AXISNUM> init_position)
 	
 	Intp = new Intepolator(robot_pose);
 	HwTm->ENC2DEG(init_position, robot_axis_deg);
-	/*
-	cout << robot_axis_deg[0] << ", "
-		<< robot_axis_deg[1] << ", "
-		<< robot_axis_deg[2] << ", "
-		<< robot_axis_deg[3] << ", "
-		<< robot_axis_deg[4] << ", "
-		<< robot_axis_deg[5] << endl;
-	*/
+
 	
 	for (int i = 0; i < AXISNUM; i++)
 	{
 		_fstart_pose[i] = 0;
 		_fend_pose[i] = 0;
-		//cout << robot_pose[i] << endl;
+		
 	}
 
 	load_point_flag = true;
@@ -44,14 +37,14 @@ ArmController::~ArmController(void)
 	delete Intp;
 }
 
-void ArmController::fStartPoseSetter(array<double, AXISNUM> deburring_point)
+void ArmController::fStartPoseSetter()
 {
 #if 0
 	_fstart_pose = { 0.425, 0, 0.7755, 180, 0, 0 };
 #else	
 	for (int i = 0; i < AXISNUM; i++)
 	{
-		_fstart_pose[i] = deburring_point[i];
+		_fstart_pose[i] = robot_pose[i];
 		//cout << _fstart_pose[i] << endl;
 	}
 #endif
@@ -74,7 +67,17 @@ void ArmController::MotionPlanning(array<double, AXISNUM> goal, double vel_max, 
 		cout << _fend_pose[i] << endl;
 	}
 	cout << "+++++++++++++++++++++++++++" << endl;
+
 #endif
+	/*
+	cout << "goal_pose = " << _fend_pose[0] << ", "
+		<< _fend_pose[1] << ", "
+		<< _fend_pose[2] << ", "
+		<< _fend_pose[3] << ", "
+		<< _fend_pose[4] << ", "
+		<< _fend_pose[5] << endl;
+		*/
+
 	Intp->MotionProfileSetter(_fstart_pose, _fend_pose, vel_max, acc_max, ang_vel_max, ang_acc_max);
 	
 	for (int i = 0; i < AXISNUM; i++)
@@ -91,7 +94,15 @@ void ArmController::MotionPlanning(array<double, AXISNUM> goal, double vel_max, 
 		Intp->TargetPoseGeneratorBlending(_target_pose_q);
 		break;
 	}
-	//cout << size(_target_pose_q) << endl;
+	//cout << "target pose queue size =" << size(_target_pose_q) << endl;
+	/*
+	cout << "last pose after intp = " << _target_pose_q.back()[0] << ", "
+		<< _target_pose_q.back()[1] << ", "
+		<< _target_pose_q.back()[2] << ", "
+		<< _target_pose_q.back()[3] << ", "
+		<< _target_pose_q.back()[4] << ", "
+		<< _target_pose_q.back()[5] << endl;
+		*/
 	
 	array<double, AXISNUM> axis_target_position;
 	array<double, AXISNUM> motor_target_position;

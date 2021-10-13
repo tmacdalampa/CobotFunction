@@ -15,7 +15,6 @@ using namespace std;
 
 int _tmain(int argc, _TCHAR * argv[])
 {
-    printf("hello world");
     SharedInformation *iShare;
     HANDLE hsm = NULL;
     HANDLE hEvent1;
@@ -70,33 +69,51 @@ int _tmain(int argc, _TCHAR * argv[])
         case 'r':
             roll = roll + 10;
             cout << "roll = " << roll << endl;
-            iShare->dbpt[3] = roll;
+            if (abs(roll) <= 180)
+            {
+                iShare->dbpt[3] = roll;
+            }
             break;
         case 'f':
             roll = roll - 10;
             cout << "roll = " << roll << endl;
-            iShare->dbpt[3] = roll;
+            if (abs(roll) <= 180)
+            {
+                iShare->dbpt[3] = roll;
+            }
             break;
         case 't':
             pitch = pitch + 10;
             cout << "pitch = " << pitch << endl;
-            iShare->dbpt[4] = pitch;
+            if (abs(pitch) <= 180)
+            {
+                iShare->dbpt[4] = pitch;
+            }
             break;
         case 'g':
             pitch = pitch - 10;
             cout << "pitch = " << pitch << endl;
-            iShare->dbpt[4] = pitch;
+            if (abs(pitch) <= 180)
+            {
+                iShare->dbpt[4] = pitch;
+            }
             break;
         
         case 'y':
             yaw = yaw + 10;
             cout << "yaw = " << yaw << endl;
-            iShare->dbpt[5] = yaw;
+            if (abs(yaw) <= 180)
+            {
+                iShare->dbpt[5] = yaw;
+            }
             break;
         case 'h':
             yaw = yaw - 10;
             cout << "yaw = " << yaw << endl;
-            iShare->dbpt[5] = yaw;
+            if (abs(yaw) <= 180) 
+            {
+                iShare->dbpt[5] = yaw;
+            }
             break;
         case 'z':
             flag = false;
@@ -110,6 +127,8 @@ int _tmain(int argc, _TCHAR * argv[])
     //
     // TO DO:  your program code here
     //
+    RtCloseHandle(hEvent1);
+    RtCloseHandle(hsm);
     ExitProcess(0);
     return 0;
 }

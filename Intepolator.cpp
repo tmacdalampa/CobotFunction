@@ -66,10 +66,25 @@ void Intepolator::MotionProfileSetter(array<double, 6> fstart_pose, array<double
 	_Ta = (Tat > Tar) ? Tat : Tar;
 	//cout << "Ta = " << _Ta << endl;
 
-	double Tct = (_translation / vel_max) - Tat; double Tcr = (_rotation / ang_vel_max) - Tar;
+	double Tct = (_translation / vel_max) - Tat;
+	//cout << "Tct = " << Tct << endl;
+	
+	if (Tct < 0)
+	{
+		Tct = 0;
+	}
+	
+	double Tcr = (_rotation / ang_vel_max) - Tar;
+	//cout << "Tcr = " << Tcr << endl;
+	
+	if (Tcr < 0)
+	{
+		Tcr = 0;
+	}
+	
 	_Tc = (Tct > Tcr) ? Tct : Tcr;
 	//cout << "Tc = " << _Tc << endl;
-
+	//cout << "Tt = " << 2 * _Ta + _Tc << endl;
 	_vel = _translation / (_Ta + _Tc);
 	//cout << "_vel = " << _vel << endl;
 	_acc = _vel / _Ta;
@@ -98,9 +113,12 @@ void Intepolator::TargetPoseGenerator(deque<array<double, 6>>& target_pose_q)
 	array<double, 3> ds, dtheta;
 	array<double, 3> a, alpha; 
 	array<double, 6 > target_pose;
-	for (int i = 0; i < 1000 * (2*_Ta + _Tc); i++)
+	double remain_L = _translation;
+	double remain_Theta = _rotation;
+	double error = 0.00001;
+	for (int j = 0; j <= 1000 * (2*_Ta + _Tc); j++)
 	{
-		if (i < 1000 * _Ta) //acc
+		if (j <= 1000 * _Ta) //acc
 		{
 			for (int i = 0; i < 3;i++)
 			{
@@ -121,9 +139,9 @@ void Intepolator::TargetPoseGenerator(deque<array<double, 6>>& target_pose_q)
 			
 			
 		}
-		else if (i >= 1000 * _Ta && i < 1000 * (_Ta + _Tc))
+		else if (j > 1000 * _Ta && j <= 1000 * (_Ta + _Tc))
 		{
-			for (int i = 0; i < 3;i++)
+			for (int i = 0; i < 3;i++) //const velocity
 			{
 				
 				_v_target[i] = _v_now[i];
@@ -133,7 +151,6 @@ void Intepolator::TargetPoseGenerator(deque<array<double, 6>>& target_pose_q)
 				_v_now[i] = _v_target[i];
 				_w_now[i] = _w_target[i];
 				
-
 				_x_target[i] = _x_target[i] + ds[i];
 				target_pose[i] = _x_target[i];
 				_theta_target[i] = _theta_target[i] + dtheta[i];
@@ -141,7 +158,28 @@ void Intepolator::TargetPoseGenerator(deque<array<double, 6>>& target_pose_q)
 			}
 			
 		}
-		else
+		
+		else if (remain_L < error) //remain distance too small
+		{
+
+			for (int i = 0; i < 3; i++)
+			{
+				ds[i] = remain_L * _u_trans[i];
+				dtheta[i] = remain_Theta * _u_rotate[i];
+				_v_target[i] = 0;
+				_w_target[i] = 0;
+				_v_now[i] = _v_target[i];
+				_w_now[i] = _w_target[i];
+				_x_target[i] = _x_target[i] + ds[i];
+				target_pose[i] = _x_target[i];
+				_theta_target[i] = _theta_target[i] + dtheta[i];
+				target_pose[i + 3] = _theta_target[i];
+			}
+			//cout << "hello" << endl;
+			break;
+		}
+		
+		else //dcc
 		{
 			for (int i = 0; i < 3;i++)
 			{
@@ -158,12 +196,13 @@ void Intepolator::TargetPoseGenerator(deque<array<double, 6>>& target_pose_q)
 				target_pose[i] = _x_target[i];
 				_theta_target[i] = _theta_target[i] + dtheta[i];
 				target_pose[i + 3] = _theta_target[i];
-			}
+			}		
 		}
-		
+		remain_L = remain_L - hypot(hypot(ds[0], ds[1]), ds[2]);
+		remain_Theta = remain_Theta - hypot(hypot(dtheta[0], dtheta[1]), dtheta[2]);
 		//cout << _v_target << endl;
 		//cout << _u_rotate[0]<<" , " << _u_rotate[1] << " , " << _u_rotate[2] << endl;
-		//cout << target_pose[0] << " , " << target_pose[1] << " , " << target_pose[2] << endl;
+
 		target_pose_q.push_back(target_pose);
 	}
 }

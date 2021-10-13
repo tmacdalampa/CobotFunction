@@ -97,11 +97,16 @@ KinRes Kinematics::FK(array<double, AXISNUM> axis_deg, array<double, AXISNUM>& r
     _T45 = GetTFMatrix(axis_deg[4], 5);
     _T56 = GetTFMatrix(axis_deg[5], 6);
     _T06 = _T01 * _T12 * _T23 * _T34 * _T45 * _T56;
+    _T06(0, 0) = rounding(_T06(0, 0)); _T06(0, 1) = rounding(_T06(0, 1)); _T06(0, 2) = rounding(_T06(0, 2)); _T06(0, 3) = rounding(_T06(0, 3));
+    _T06(1, 0) = rounding(_T06(1, 0)); _T06(1, 1) = rounding(_T06(1, 1)); _T06(1, 2) = rounding(_T06(1, 2)); _T06(1, 3) = rounding(_T06(1, 3));
+    _T06(2, 0) = rounding(_T06(2, 0)); _T06(2, 1) = rounding(_T06(2, 1)); _T06(2, 2) = rounding(_T06(2, 2)); _T06(2, 3) = rounding(_T06(2, 3));
+    _T06(3, 0) = rounding(_T06(3, 0)); _T06(3, 1) = rounding(_T06(3, 1)); _T06(3, 2) = rounding(_T06(3, 2)); _T06(3, 3) = rounding(_T06(3, 3));
+
     //cout << _T06 << endl;
     
-    robot_pose[0] = _T06(0, 3);
-    robot_pose[1] = _T06(1, 3);
-    robot_pose[2] = _T06(2, 3);
+    robot_pose[0] = (_T06(0, 3));
+    robot_pose[1] = (_T06(1, 3));
+    robot_pose[2] = (_T06(2, 3));
 #if 1   
     robot_pose[4] = RAD2DEG * atan2(-_T06(2, 0), sqrt(_T06(0, 0) * _T06(0, 0) + _T06(1, 0) * _T06(1, 0))); //pitch
     //cout << "cos(roll) = " << cos(robot_pose[4]) << endl;
@@ -110,6 +115,14 @@ KinRes Kinematics::FK(array<double, AXISNUM> axis_deg, array<double, AXISNUM>& r
 
     robot_pose[3] = RAD2DEG * atan2((_T06(2, 1)) / cos(robot_pose[4]), (_T06(2, 2)) / cos(robot_pose[4])); //roll
     robot_pose[5] = RAD2DEG * atan2((_T06(1, 0)) / cos(robot_pose[4]), (_T06(0, 0)) / cos(robot_pose[4])); //yaw
+    /*cout << "robot pose = "
+        << robot_pose[0] << " , "
+        << robot_pose[1] << " , "
+        << robot_pose[2] << " , "
+        << robot_pose[3] << " , "
+        << robot_pose[4] << " , "
+        << robot_pose[5] << endl;
+        */
 #else
     array<double, 3> ABC;
     Matrix3d RT;
@@ -120,6 +133,7 @@ KinRes Kinematics::FK(array<double, AXISNUM> axis_deg, array<double, AXISNUM>& r
     robot_pose[3] = ABC[0];
     robot_pose[4] = ABC[1];
     robot_pose[5] = ABC[2];
+    
 #endif
     return KinRes::SUCCEED;
 }
@@ -133,6 +147,10 @@ KinRes Kinematics::FK_R(array<double, AXISNUM> axis_deg, Matrix4d& T06)
     _T45 = GetTFMatrix(axis_deg[4], 5);
     _T56 = GetTFMatrix(axis_deg[5], 6);
     T06 = _T01 * _T12 * _T23 * _T34 * _T45 * _T56;
+    T06(0, 0) = rounding(T06(0, 0)); T06(0, 1) = rounding(T06(0, 1)); T06(0, 2) = rounding(T06(0, 2)); T06(0, 3) = rounding(T06(0, 3));
+    T06(1, 0) = rounding(T06(1, 0)); T06(1, 1) = rounding(T06(1, 1)); T06(1, 2) = rounding(T06(1, 2)); T06(1, 3) = rounding(T06(1, 3));
+    T06(2, 0) = rounding(T06(2, 0)); T06(2, 1) = rounding(T06(2, 1)); T06(2, 2) = rounding(T06(2, 2)); T06(2, 3) = rounding(T06(2, 3));
+    T06(3, 0) = rounding(T06(3, 0)); T06(3, 1) = rounding(T06(3, 1)); T06(3, 2) = rounding(T06(3, 2)); T06(3, 3) = rounding(T06(3, 3));
     //cout << "T06 = " << T06 << endl;
     return KinRes::SUCCEED;
 }
@@ -275,9 +293,14 @@ KinRes Kinematics::RT2ABC(array<double, 3>& ABC, Matrix3d RT)
 
 double Kinematics::rounding(double num)
 {
-    int index = 5; //to number 5 
+    int index = 4; //to number 4 
     bool isNegative = false; // whether is negative number or not
 
+    if (abs(num) < 0.00001)
+    {
+        num = 0;
+        return num;
+    }
     if (num < 0) // if this number is negative, then convert to positive number
     {
         isNegative = true;
@@ -300,8 +323,3 @@ double Kinematics::rounding(double num)
 }
 
 
-double Kinematics::tozero(double num)
-{
-    if (abs(num) < 0.00001) num = 0;
-    return num;
-}
