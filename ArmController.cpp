@@ -63,7 +63,7 @@ void ArmController::MotionPlanning(array<double, AXISNUM> goal, double vel_max, 
 {
 	_target_pose_q.clear();
 	Kin->PtSetter(goal, _deburringT06, _fend_pose);
-#if 1
+#if 0
 	cout << "==========================" << endl;
 	for (int i = 0; i < 6; i++)
 	{
@@ -92,6 +92,12 @@ void ArmController::MotionPlanning(array<double, AXISNUM> goal, double vel_max, 
 
 	}
 	//cout << size(_target_pose_q) << endl;
+	cout << "last pose after intp = " << _target_pose_q.back()[0] << ", "
+		<< _target_pose_q.back()[1] << ", "
+		<< _target_pose_q.back()[2] << ", "
+		<< _target_pose_q.back()[3] << ", "
+		<< _target_pose_q.back()[4] << ", "
+		<< _target_pose_q.back()[5] << endl;
 	
 	array<double, AXISNUM> axis_target_position;
 	array<double, AXISNUM> motor_target_position;

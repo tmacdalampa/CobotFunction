@@ -61,7 +61,7 @@ pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
     static array<double, 6> gp2 = { 0, 0, 0, A, B, C };
     static int i = 0;
     int j = i % 3;
-    if (i<6)
+    if (i<30)
     {
         res.first = true;
         switch (j)
@@ -75,7 +75,7 @@ pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
             break;
         case 2:
             res.second = gp2;
-            
+            /*
             if (i == 2)
             {
                 deburring_point[3] = 170;
@@ -86,7 +86,7 @@ pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
                     << deburring_point[4] << " , "
                     <<deburring_point[5] << endl;
             }
-            
+            */
             break;
         }
         //cout << "i = " << i << endl;
@@ -261,7 +261,7 @@ int _tmain(int argc, _TCHAR* argv[])
     
     Scorpio_Arm.MotionPlanning(LP_res.second, 0.1, 0.1, 45, 450, isBlending);
     //init_goal.pop();
-#if 1
+#if 0
     Code = RegisterCallback(&CyclicTask, &Scorpio_Arm);
     
     while (1)

@@ -163,7 +163,12 @@ void Intepolator::TargetPoseGenerator(deque<array<double, 6>>& target_pose_q)
 		
 		//cout << _v_target << endl;
 		//cout << _u_rotate[0]<<" , " << _u_rotate[1] << " , " << _u_rotate[2] << endl;
-		//cout << target_pose[0] << " , " << target_pose[1] << " , " << target_pose[2] << endl;
+		cout<< target_pose[0] << " , " 
+			<< target_pose[1] << " , " 
+			<< target_pose[2] << " , "
+			<< target_pose[3] << " , "
+			<< target_pose[4] << " , "
+			<< target_pose[5] << endl;
 		target_pose_q.push_back(target_pose);
 	}
 }
