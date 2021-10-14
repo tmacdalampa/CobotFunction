@@ -61,7 +61,7 @@ pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
     static array<double, 6> gp2 = { 0, 0, 0, A, B, C };
     static int i = 0;
     int j = i % 3;
-    if (i<30)
+    if (i<300)
     {
         res.first = true;
         switch (j)
@@ -243,7 +243,7 @@ int _tmain(int argc, _TCHAR* argv[])
         //RtPrintf("Init position:%d\n", (int)Init_Position[i]);
     }
 #endif
-    array<double, 6> deburring_point = { 0.425, 0, 0.6385, 180, 0, 0 };
+    array<double, 6> deburring_point = { 0.425, 0, 0.7755, 180, 0, 0 };
     
     for (int i = 0; i < 6; i++)
     {
@@ -296,13 +296,13 @@ int _tmain(int argc, _TCHAR* argv[])
             LP_res = LoadPoint(deburring_point);
             if (LP_res.first == true)
             {
-                
+                /*
                 cout << "x = " << deburring_point[0] << " , "
                     << "y = " << deburring_point[1] << " , "
                     << "z = " << deburring_point[2] << " , "
                     << "roll = " << deburring_point[3] << " , "
                     << "pitch = " << deburring_point[4] << " , "
-                    << "yaw = " << deburring_point[5] << endl;
+                    << "yaw = " << deburring_point[5] << endl;*/
                     
                 //cout << LP_res.second[0] << "," << LP_res.second[1] << "," << LP_res.second[2] << endl;
                 Scorpio_Arm.DeburringPtT06Setter(deburring_point);

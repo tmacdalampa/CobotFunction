@@ -20,6 +20,8 @@ private:
 	array<double, 3> _x_now, _x_target, _theta_now, _theta_target;
 	double rounding(double num);
 
+	double _error;
+	double _remain_L, _remain_Theta;
 	
 
 

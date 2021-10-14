@@ -17,7 +17,7 @@ Intepolator::Intepolator(array<double, 6> robot_pose)
 	_dcc = -_acc; 
 	_ang_dcc = -_ang_acc;
 	_dt = 0.001;
-
+	_error = 0.0001;
 	
 
 	for (int i = 0; i < 3; i++)
@@ -47,7 +47,8 @@ void Intepolator::MotionProfileSetter(array<double, 6> fstart_pose, array<double
 {
 	_translation = rounding(hypot(hypot((fend_pose[0] - fstart_pose[0]), (fend_pose[1] - fstart_pose[1])), (fend_pose[2] - fstart_pose[2])));
 	_rotation = rounding(hypot(hypot((fend_pose[3] - fstart_pose[3]), (fend_pose[4] - fstart_pose[4])), (fend_pose[5] - fstart_pose[5])));
-	//cout << "translation = " << _translation << endl;
+	_remain_L = _translation;
+	_remain_Theta = _rotation;//cout << "translation = " << _translation << endl;
 	//cout << "rotation = " << rotation << endl;
 	for (int i = 0; i < 3; i++)
 	{
@@ -113,9 +114,8 @@ void Intepolator::TargetPoseGenerator(deque<array<double, 6>>& target_pose_q)
 	array<double, 3> ds, dtheta;
 	array<double, 3> a, alpha; 
 	array<double, 6 > target_pose;
-	double remain_L = _translation;
-	double remain_Theta = _rotation;
-	double error = 0.00001;
+	
+	
 	for (int j = 0; j <= 1000 * (2*_Ta + _Tc); j++)
 	{
 		if (j <= 1000 * _Ta) //acc
@@ -158,14 +158,14 @@ void Intepolator::TargetPoseGenerator(deque<array<double, 6>>& target_pose_q)
 			}
 			
 		}
-		
-		else if (remain_L < error) //remain distance too small
+		/*
+		else if (_remain_L < _error) //remain distance too small
 		{
 
 			for (int i = 0; i < 3; i++)
 			{
-				ds[i] = remain_L * _u_trans[i];
-				dtheta[i] = remain_Theta * _u_rotate[i];
+				ds[i] = _remain_L * _u_trans[i];
+				dtheta[i] = _remain_Theta * _u_rotate[i];
 				_v_target[i] = 0;
 				_w_target[i] = 0;
 				_v_now[i] = _v_target[i];
@@ -175,10 +175,10 @@ void Intepolator::TargetPoseGenerator(deque<array<double, 6>>& target_pose_q)
 				_theta_target[i] = _theta_target[i] + dtheta[i];
 				target_pose[i + 3] = _theta_target[i];
 			}
-			//cout << "hello" << endl;
+			cout << "hello" << endl;
 			break;
 		}
-		
+		*/
 		else //dcc
 		{
 			for (int i = 0; i < 3;i++)
@@ -198,8 +198,8 @@ void Intepolator::TargetPoseGenerator(deque<array<double, 6>>& target_pose_q)
 				target_pose[i + 3] = _theta_target[i];
 			}		
 		}
-		remain_L = remain_L - hypot(hypot(ds[0], ds[1]), ds[2]);
-		remain_Theta = remain_Theta - hypot(hypot(dtheta[0], dtheta[1]), dtheta[2]);
+		_remain_L = _remain_L - hypot(hypot(ds[0], ds[1]), ds[2]);
+		_remain_Theta = _remain_Theta - hypot(hypot(dtheta[0], dtheta[1]), dtheta[2]);
 		//cout << _v_target << endl;
 		//cout << _u_rotate[0]<<" , " << _u_rotate[1] << " , " << _u_rotate[2] << endl;
 
@@ -262,6 +262,8 @@ void Intepolator::TargetPoseGeneratorBlending(deque<array<double, 6>>& target_po
 			}
 
 		}
+		_remain_L = _remain_L - hypot(hypot(ds[0], ds[1]), ds[2]);
+		_remain_Theta = _remain_Theta - hypot(hypot(dtheta[0], dtheta[1]), dtheta[2]);
 		//cout << _v_target << endl;
 		//cout << _u_rotate[0]<<" , " << _u_rotate[1] << " , " << _u_rotate[2] << endl;
 		//cout << target_pose[0] << " , " << target_pose[1] << " , " << target_pose[2] << endl;
@@ -274,25 +276,49 @@ void Intepolator::TargetPoseGeneratorStop(deque<array<double, 6>>& target_pose_q
 	array<double, 3> ds, dtheta;
 	array<double, 3> a, alpha;
 	array<double, 6 > target_pose;
-	for (int i = 0; i < 1000 * _Ta; i++)
+	for (int i = 0; i <= 1000 * _Ta; i++)
 	{
-		for (int i = 0; i < 3; i++)
+		if (_remain_L < _error) //remain distance too small
 		{
-			a[i] = _u_trans[i] * _dcc;
-			alpha[i] = _u_rotate[i] * _ang_dcc;
-			_v_target[i] = _v_now[i] + a[i] * _dt;
-			_w_target[i] = _w_now[i] + alpha[i] * _dt;
-			ds[i] = (_v_target[i] + _v_now[i]) * 0.5 * _dt;
-			dtheta[i] = (_w_target[i] + _w_now[i]) * 0.5 * _dt;
-			_v_now[i] = _v_target[i];
-			_w_now[i] = _w_target[i];
-			//if (i == 0) cout << _v_now[i] << endl;
 
-			_x_target[i] = _x_target[i] + ds[i];
-			target_pose[i] = _x_target[i];
-			_theta_target[i] = _theta_target[i] + dtheta[i];
-			target_pose[i + 3] = _theta_target[i];
-	    }
+			for (int i = 0; i < 3; i++)
+			{
+				ds[i] = _remain_L * _u_trans[i];
+				dtheta[i] = _remain_Theta * _u_rotate[i];
+				_v_target[i] = 0;
+				_w_target[i] = 0;
+				_v_now[i] = _v_target[i];
+				_w_now[i] = _w_target[i];
+				_x_target[i] = _x_target[i] + ds[i];
+				target_pose[i] = _x_target[i];
+				_theta_target[i] = _theta_target[i] + dtheta[i];
+				target_pose[i + 3] = _theta_target[i];
+			}
+		//cout << "hello" << endl;
+			break;
+		}
+		else
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				a[i] = _u_trans[i] * _dcc;
+				alpha[i] = _u_rotate[i] * _ang_dcc;
+				_v_target[i] = _v_now[i] + a[i] * _dt;
+				_w_target[i] = _w_now[i] + alpha[i] * _dt;
+				ds[i] = (_v_target[i] + _v_now[i]) * 0.5 * _dt;
+				dtheta[i] = (_w_target[i] + _w_now[i]) * 0.5 * _dt;
+				_v_now[i] = _v_target[i];
+				_w_now[i] = _w_target[i];
+				//if (i == 0) cout << _v_now[i] << endl;
+
+				_x_target[i] = _x_target[i] + ds[i];
+				target_pose[i] = _x_target[i];
+				_theta_target[i] = _theta_target[i] + dtheta[i];
+				target_pose[i + 3] = _theta_target[i];
+			}
+		}
+		_remain_L = _remain_L - hypot(hypot(ds[0], ds[1]), ds[2]);
+		_remain_Theta = _remain_Theta - hypot(hypot(dtheta[0], dtheta[1]), dtheta[2]);
 		//cout << _v_target << endl;
 		//cout << _u_rotate[0]<<" , " << _u_rotate[1] << " , " << _u_rotate[2] << endl;
 		//cout << target_pose[0] << " , " << target_pose[1] << " , " << target_pose[2] << endl;

@@ -12,7 +12,8 @@ struct DHTable
 {
 	array<double, AXISNUM> a = { 0, 0, 0.425, 0, 0, 0};
 	array<double, AXISNUM> alpha = { 0, 90, 0, 90, 90, -90};
-	array<double, AXISNUM> d = { 0.426, 0, 0, 0.425, 0, 0.2125 };
+	//array<double, AXISNUM> d = { 0.426, 0, 0, 0.425, 0, 0.2125 };
+	array<double, AXISNUM> d = { 0.426, 0, 0, 0.425, 0, 0.0755 };
 	array<double, AXISNUM> upper_limit = {180, 150, 150, 180, 150, 180}; //axis upper limit
 	array<double, AXISNUM> lower_limit = { -180, -150, -150, -180, -150, -180 };
 };
