@@ -14,36 +14,23 @@ Kinematics::~Kinematics(void)
     delete dh;
 }
 
-KinRes Kinematics::PtSetter(array<double, AXISNUM> goal, Matrix4d deburringT06, array<double, AXISNUM>& fend_pose)
+KinRes Kinematics::PtSetter(Vector4d goal_vector, Matrix4d deburringT06, array<double, AXISNUM>& fend_pose)
 {
-    //Matrix4d deburringT06_pre;
-    //FK_R(axis_deg, T06);
+
     Matrix3d R06;
     R06(0, 0) = deburringT06(0, 0); R06(0, 1) = deburringT06(0, 1); R06(0, 2) = deburringT06(0, 2);
     R06(1, 0) = deburringT06(1, 0); R06(1, 1) = deburringT06(1, 1); R06(1, 2) = deburringT06(1, 2);
     R06(2, 0) = deburringT06(2, 0); R06(2, 1) = deburringT06(2, 1); R06(2, 2) = deburringT06(2, 2);
     
-    Matrix3d R_end;
-    
-    ABC2RT(goal[3], goal[4], goal[5], R_end);
-    
-    
-    Matrix3d fR_end = R06 * R_end;
-    //cout << "fR_start = " << fR_start << endl;
-    //cout << "fR_end = " << fR_end << endl;
-
     array<double, 3> goal_pose;
-    
-    RT2ABC(goal_pose, fR_end);
 
-    //cout << "end_pose = " << end_pose[0] << ", " << end_pose[1] << ", " << end_pose[2] << endl;
-
-    Vector4d end_point;
+    RT2ABC(goal_pose, R06);
     
-    end_point << goal[0], goal[1], goal[2], 1;
+    Matrix3d R_end;
+
     Vector4d fend_point;
 
-    fend_point = deburringT06 * end_point;
+    fend_point = deburringT06 * goal_vector;
     
     //cout << fend_point << endl;
     for (int i = 0; i < 3; i++)
@@ -54,7 +41,6 @@ KinRes Kinematics::PtSetter(array<double, AXISNUM> goal, Matrix4d deburringT06, 
     {
         fend_pose[i] = goal_pose[i-3];
     }
-
     return KinRes::SUCCEED;
 }
 

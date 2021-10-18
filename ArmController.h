@@ -27,6 +27,7 @@ private:
 	deque<array<double, AXISNUM>> _target_pose_q;
 	deque<array<double, AXISNUM>> _target_position_q;
 
+	Vector4d _vdp6;
 public:
 	bool break_flag;
 	bool load_point_flag;
@@ -41,4 +42,5 @@ public:
 	void UpdateRobotStates(array<double, AXISNUM> current_position);
 	void DeburringPtT06Setter(array<double, AXISNUM> deburring_point);
 	void fStartPoseSetter();
+	void DbPt6Setter(array<double, AXISNUM> deburring_point);
 };

@@ -37,6 +37,18 @@ ArmController::~ArmController(void)
 	delete Intp;
 }
 
+void ArmController::DbPt6Setter(array<double, AXISNUM> deburring_point)
+{
+	Matrix4d T06, invT06;
+	Vector4d v_dp0;
+	v_dp0 << deburring_point[0], deburring_point[1], deburring_point[2], 1;
+	
+	Kin->FK_R(_init_axis_deg, T06);
+	invT06 = T06.inverse();
+	_vdp6 = invT06 * v_dp0;
+	//cout << _vdp6 << endl;
+}
+
 void ArmController::fStartPoseSetter()
 {
 #if 0
@@ -55,7 +67,10 @@ void ArmController::fStartPoseSetter()
 void ArmController::MotionPlanning(array<double, AXISNUM> goal, double vel_max, double acc_max, double ang_vel_max, double ang_acc_max, bool blending)
 {
 	_target_pose_q.clear();
-	Kin->PtSetter(goal, _deburringT06, _fend_pose);
+	Vector4d goal_vector;
+	goal_vector << _vdp6[0] - goal[0] , _vdp6[1] - goal[1], _vdp6[2] - goal[2], 1;
+	//cout << goal_vector << endl;
+	Kin->PtSetter(goal_vector, _deburringT06, _fend_pose);
 #if 0
 	cout << "==========================" << endl;
 	for (int i = 0; i < 6; i++)
@@ -69,14 +84,14 @@ void ArmController::MotionPlanning(array<double, AXISNUM> goal, double vel_max, 
 	cout << "+++++++++++++++++++++++++++" << endl;
 
 #endif
-	/*
+	
 	cout << "goal_pose = " << _fend_pose[0] << ", "
 		<< _fend_pose[1] << ", "
 		<< _fend_pose[2] << ", "
 		<< _fend_pose[3] << ", "
 		<< _fend_pose[4] << ", "
 		<< _fend_pose[5] << endl;
-		*/
+		
 
 	Intp->MotionProfileSetter(_fstart_pose, _fend_pose, vel_max, acc_max, ang_vel_max, ang_acc_max);
 	
@@ -95,13 +110,13 @@ void ArmController::MotionPlanning(array<double, AXISNUM> goal, double vel_max, 
 		break;
 	}
 	//cout << "target pose queue size =" << size(_target_pose_q) << endl;
-	
+	/*
 	cout << "last pose after intp = " << _target_pose_q.back()[0] << ", "
 		<< _target_pose_q.back()[1] << ", "
 		<< _target_pose_q.back()[2] << ", "
 		<< _target_pose_q.back()[3] << ", "
 		<< _target_pose_q.back()[4] << ", "
-		<< _target_pose_q.back()[5] << endl;
+		<< _target_pose_q.back()[5] << endl;*/
 		
 	
 	array<double, AXISNUM> axis_target_position;
@@ -202,13 +217,18 @@ void ArmController::UpdateRobotStates(array<double, AXISNUM> current_position)
 
 void ArmController::DeburringPtT06Setter(array<double, AXISNUM> deburring_point)
 {
-	_deburringT06(0, 3) = deburring_point[0];
-	_deburringT06(1, 3) = deburring_point[1];
-	_deburringT06(2, 3) = deburring_point[2];
-	_deburringT06(3, 3) = 1;
-	//KinRes ABC2RT(double A, double B, double C, Matrix3d & RT);
 	Matrix3d dpRT;
 	Kin->ABC2RT(deburring_point[3], deburring_point[4], deburring_point[5], dpRT);
+	
+	
+	_deburringT06(0, 3) = deburring_point[0] - dpRT(0, 0) * _vdp6[0] - dpRT(0, 1) * _vdp6[1] - dpRT(0, 2) * _vdp6[2];
+	_deburringT06(1, 3) = deburring_point[1] - dpRT(1, 0) * _vdp6[0] - dpRT(1, 1) * _vdp6[1] - dpRT(1, 2) * _vdp6[2];
+	_deburringT06(2, 3) = deburring_point[2] - dpRT(2, 0) * _vdp6[0] - dpRT(2, 1) * _vdp6[1] - dpRT(2, 2) * _vdp6[2];
+	
+	_deburringT06(3, 3) = 1;
+
+	//KinRes ABC2RT(double A, double B, double C, Matrix3d & RT);
+
 
 	_deburringT06(0, 0) = dpRT(0, 0); _deburringT06(0, 1) = dpRT(0, 1); _deburringT06(0, 2) = dpRT(0, 2);
 	_deburringT06(1, 0) = dpRT(1, 0); _deburringT06(1, 1) = dpRT(1, 1); _deburringT06(1, 2) = dpRT(1, 2);
