@@ -24,7 +24,7 @@ struct HardwareData
 	//array<double, AXISNUM> zero_points = { 0,0,0,0,0,0 };
 	//{57886.1416, 10373.8298, -10552.0523, -1005.4330, 35732, 28205.0408}//this 6 number let arm go to initial pose
 	//{57886.1416, 10373.8298, 338        , -1005.4330, 35732, 28205.0408}//this 6 number let arm go to straight
-	array<int, AXISNUM> gear_ratios = {161, 161, 121, 161, 161, 161};
+	array<int, AXISNUM> gear_ratios = {161, 161, 121, 161, 161, 101};
 	void ENC2DEG(array<double, AXISNUM>& enc_cnts, array<double, AXISNUM>& axis_deg)
 	{
 		for (int i = 0; i < AXISNUM; i++)

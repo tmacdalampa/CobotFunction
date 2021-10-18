@@ -17,7 +17,7 @@ Intepolator::Intepolator(array<double, 6> robot_pose)
 	_dcc = -_acc; 
 	_ang_dcc = -_ang_acc;
 	_dt = 0.001;
-	_error = 0.0001;
+	_error = 0.00001;
 	
 
 	for (int i = 0; i < 3; i++)
@@ -116,9 +116,9 @@ void Intepolator::TargetPoseGenerator(deque<array<double, 6>>& target_pose_q)
 	array<double, 6 > target_pose;
 	
 	
-	for (int j = 0; j <= 1000 * (2*_Ta + _Tc); j++)
+	for (int j = 0; j < 1000 * (2*_Ta + _Tc); j++)
 	{
-		if (j <= 1000 * _Ta) //acc
+		if (j < 1000 * _Ta) //acc
 		{
 			for (int i = 0; i < 3;i++)
 			{
@@ -139,7 +139,7 @@ void Intepolator::TargetPoseGenerator(deque<array<double, 6>>& target_pose_q)
 			
 			
 		}
-		else if (j > 1000 * _Ta && j <= 1000 * (_Ta + _Tc))
+		else if (j >= 1000 * _Ta && j < 1000 * (_Ta + _Tc))
 		{
 			for (int i = 0; i < 3;i++) //const velocity
 			{
@@ -158,7 +158,7 @@ void Intepolator::TargetPoseGenerator(deque<array<double, 6>>& target_pose_q)
 			}
 			
 		}
-		/*
+		
 		else if (_remain_L < _error) //remain distance too small
 		{
 
@@ -175,10 +175,10 @@ void Intepolator::TargetPoseGenerator(deque<array<double, 6>>& target_pose_q)
 				_theta_target[i] = _theta_target[i] + dtheta[i];
 				target_pose[i + 3] = _theta_target[i];
 			}
-			cout << "hello" << endl;
+			//cout << "hello" << endl;
 			break;
 		}
-		*/
+		
 		else //dcc
 		{
 			for (int i = 0; i < 3;i++)

@@ -60,8 +60,8 @@ pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
     static array<double, 6> gp1 = { 0.1, -0.2, 0, A, B, C};
     static array<double, 6> gp2 = { 0, 0, 0, A, B, C };
     static int i = 0;
-    int j = i % 3;
-    if (i<300)
+    int j = i % 2;
+    if (i<20)
     {
         res.first = true;
         switch (j)
