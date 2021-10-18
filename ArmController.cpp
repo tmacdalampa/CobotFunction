@@ -92,6 +92,7 @@ void ArmController::MotionPlanning(array<double, AXISNUM> goal, double vel_max, 
 		<< _fend_pose[4] << ", "
 		<< _fend_pose[5] << endl;
 		
+		
 
 	Intp->MotionProfileSetter(_fstart_pose, _fend_pose, vel_max, acc_max, ang_vel_max, ang_acc_max);
 	

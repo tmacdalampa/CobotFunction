@@ -15,18 +15,27 @@ using namespace std;
 
 int _tmain(int argc, _TCHAR * argv[])
 {
+    Sleep(1000);
     SharedInformation *iShare;
     HANDLE hsm = NULL;
     HANDLE hEvent1;
     hsm = RtOpenSharedMemory(SHM_MAP_ALL_ACCESS, FALSE, L"sharedspace", (VOID**)&iShare);
-    if (hsm == NULL) cout << "Shared memory open failed" << endl;
+
+    if (hsm == NULL)
+    {
+        cout << "Shared memory open failed" << endl;
+    }
+#if 0
     hEvent1 = RtCreateEvent(NULL, false, false, L"TestEvent");
-    double x = iShare->dbpt[0];
-    double y = iShare->dbpt[1];
-    double z = iShare->dbpt[2];
-    double roll = iShare->dbpt[3];
-    double pitch = iShare->dbpt[4];
-    double yaw  = iShare->dbpt[5];
+
+    
+    double x = iShare->x;
+    double y = iShare->y;
+    double z = iShare->z;
+    double roll = iShare->roll;
+    double pitch = iShare->pitch;
+    double yaw  = iShare->yaw;
+    
     bool flag = true;
     char command;
     
@@ -39,39 +48,39 @@ int _tmain(int argc, _TCHAR * argv[])
         case 'q':
             x = x + 0.05;
             cout << "x = " << x << endl;
-            iShare->dbpt[0] = x;
+            iShare->x = x;
             break;
         case 'a':
             x = x - 0.05;
             cout << "x = " << x << endl;
-            iShare->dbpt[0] = x;
+            iShare->x = x;
             break;
         case 'w':
             y = y + 0.05;
             cout << "y = " << y << endl;
-            iShare->dbpt[1] = y;
+            iShare->y = y;
             break;
         case 's':
             y = y - 0.05;
             cout << "y = " << y << endl;
-            iShare->dbpt[1] = y;
+            iShare->y = y;
             break;
         case 'e':
             z = z + 0.05;
             cout << "z = " << z << endl;
-            iShare->dbpt[2] = z;
+            iShare->z = z;
             break;
         case 'd':
             z = z - 0.05;
             cout << "z = " << z << endl;
-            iShare->dbpt[2] = z;
+            iShare->z = z;
             break;
         case 'r':
             roll = roll + 10;
             cout << "roll = " << roll << endl;
             if (abs(roll) <= 180)
             {
-                iShare->dbpt[3] = roll;
+                iShare->roll = roll;
             }
             break;
         case 'f':
@@ -79,7 +88,7 @@ int _tmain(int argc, _TCHAR * argv[])
             cout << "roll = " << roll << endl;
             if (abs(roll) <= 180)
             {
-                iShare->dbpt[3] = roll;
+                iShare->roll = roll;
             }
             break;
         case 't':
@@ -87,7 +96,7 @@ int _tmain(int argc, _TCHAR * argv[])
             cout << "pitch = " << pitch << endl;
             if (abs(pitch) <= 180)
             {
-                iShare->dbpt[4] = pitch;
+                iShare->pitch = pitch;
             }
             break;
         case 'g':
@@ -95,7 +104,7 @@ int _tmain(int argc, _TCHAR * argv[])
             cout << "pitch = " << pitch << endl;
             if (abs(pitch) <= 180)
             {
-                iShare->dbpt[4] = pitch;
+                iShare->pitch = pitch;
             }
             break;
         
@@ -104,7 +113,7 @@ int _tmain(int argc, _TCHAR * argv[])
             cout << "yaw = " << yaw << endl;
             if (abs(yaw) <= 180)
             {
-                iShare->dbpt[5] = yaw;
+                iShare->yaw = yaw;
             }
             break;
         case 'h':
@@ -112,7 +121,7 @@ int _tmain(int argc, _TCHAR * argv[])
             cout << "yaw = " << yaw << endl;
             if (abs(yaw) <= 180) 
             {
-                iShare->dbpt[5] = yaw;
+                iShare->yaw = yaw;
             }
             break;
         case 'z':
@@ -128,6 +137,7 @@ int _tmain(int argc, _TCHAR * argv[])
     // TO DO:  your program code here
     //
     RtCloseHandle(hEvent1);
+#endif
     RtCloseHandle(hsm);
     ExitProcess(0);
     return 0;
