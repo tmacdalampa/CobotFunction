@@ -84,7 +84,7 @@ pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
 int _tmain(int argc, _TCHAR* argv[])
 {
 #if 1
-    pSharedInformation pSHM;
+    pSharedInformationTwo pSHM;
     HANDLE  	hSHM = NULL;
     HANDLE     hEvent1;
     HANDLE     hSemphone;
@@ -95,7 +95,7 @@ int _tmain(int argc, _TCHAR* argv[])
     {
         if (!(hSHM = RtCreateSharedMemory((DWORD)PAGE_READWRITE,
             (DWORD)0,
-            (DWORD)(sizeof(SharedInformation)),
+            (DWORD)(sizeof(SharedInformationTwo)),
             L"sharedspace",
             (void**)&location)))
         {
@@ -103,7 +103,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
         }
         else	RtPrintf("Created shared memory success!\n");
-        pSHM = (pSharedInformation)location;
+        pSHM = (pSharedInformationTwo)location;
         pSHM->Run = 1;
         //pSHM->iData = 10;
         //pSHM->iValue = 20;
@@ -229,14 +229,13 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 #endif
     array<double, 6> deburring_point = { 0.475, 0, 0.7415, 180, 0, 0 };
-    pSHM->x = 1;
-    /*
+    pSHM->x = deburring_point[0];
     pSHM->y = deburring_point[1];
     pSHM->z = deburring_point[2];
     pSHM->roll = deburring_point[3];
     pSHM->pitch = deburring_point[4];
     pSHM->yaw = deburring_point[5];
-    */
+    
     bool isBlending = false;
     ArmController Scorpio_Arm(Init_Position);//input goal and current position in degrees
     Scorpio_Arm.DbPt6Setter(deburring_point);
@@ -248,18 +247,21 @@ int _tmain(int argc, _TCHAR* argv[])
     
     Scorpio_Arm.MotionPlanning(LP_res.second, 0.1, 0.1, 45, 450, isBlending);
     
-#if 0
+#if 1
     Code = RegisterCallback(&CyclicTask, &Scorpio_Arm);
     
     while (1)
     {
         if (Scorpio_Arm.load_point_flag == true)
         {
+            /*
             for (int i = 0; i < 6; i++)
             {
                 deburring_point[i] = pSHM->dbpt[i];
             }
-            
+            */
+            deburring_point[0] = pSHM->x; deburring_point[1] = pSHM->y; deburring_point[2] = pSHM->z;
+            deburring_point[3] = pSHM->roll; deburring_point[4] = pSHM->pitch; deburring_point[5] = pSHM->yaw;
             LP_res = LoadPoint(deburring_point);
             if (LP_res.first == true)
             {

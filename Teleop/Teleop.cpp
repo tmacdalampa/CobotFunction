@@ -16,25 +16,25 @@ using namespace std;
 int _tmain(int argc, _TCHAR * argv[])
 {
     Sleep(1000);
-    SharedInformation *iShare;
+    SharedInformationTwo *iShareTwo;
     HANDLE hsm = NULL;
     HANDLE hEvent1;
-    hsm = RtOpenSharedMemory(SHM_MAP_ALL_ACCESS, FALSE, L"sharedspace", (VOID**)&iShare);
+    hsm = RtOpenSharedMemory(SHM_MAP_ALL_ACCESS, FALSE, L"sharedspace", (VOID**)&iShareTwo);
 
     if (hsm == NULL)
     {
         cout << "Shared memory open failed" << endl;
     }
-#if 0
+#if 1
     hEvent1 = RtCreateEvent(NULL, false, false, L"TestEvent");
 
     
-    double x = iShare->x;
-    double y = iShare->y;
-    double z = iShare->z;
-    double roll = iShare->roll;
-    double pitch = iShare->pitch;
-    double yaw  = iShare->yaw;
+    double x = iShareTwo->x;
+    double y = iShareTwo->y;
+    double z = iShareTwo->z;
+    double roll = iShareTwo->roll;
+    double pitch = iShareTwo->pitch;
+    double yaw  = iShareTwo->yaw;
     
     bool flag = true;
     char command;
@@ -48,39 +48,39 @@ int _tmain(int argc, _TCHAR * argv[])
         case 'q':
             x = x + 0.05;
             cout << "x = " << x << endl;
-            iShare->x = x;
+            iShareTwo->x = x;
             break;
         case 'a':
             x = x - 0.05;
             cout << "x = " << x << endl;
-            iShare->x = x;
+            iShareTwo->x = x;
             break;
         case 'w':
             y = y + 0.05;
             cout << "y = " << y << endl;
-            iShare->y = y;
+            iShareTwo->y = y;
             break;
         case 's':
             y = y - 0.05;
             cout << "y = " << y << endl;
-            iShare->y = y;
+            iShareTwo->y = y;
             break;
         case 'e':
             z = z + 0.05;
             cout << "z = " << z << endl;
-            iShare->z = z;
+            iShareTwo->z = z;
             break;
         case 'd':
             z = z - 0.05;
             cout << "z = " << z << endl;
-            iShare->z = z;
+            iShareTwo->z = z;
             break;
         case 'r':
             roll = roll + 10;
             cout << "roll = " << roll << endl;
             if (abs(roll) <= 180)
             {
-                iShare->roll = roll;
+                iShareTwo->roll = roll;
             }
             break;
         case 'f':
@@ -88,7 +88,7 @@ int _tmain(int argc, _TCHAR * argv[])
             cout << "roll = " << roll << endl;
             if (abs(roll) <= 180)
             {
-                iShare->roll = roll;
+                iShareTwo->roll = roll;
             }
             break;
         case 't':
@@ -96,7 +96,7 @@ int _tmain(int argc, _TCHAR * argv[])
             cout << "pitch = " << pitch << endl;
             if (abs(pitch) <= 180)
             {
-                iShare->pitch = pitch;
+                iShareTwo->pitch = pitch;
             }
             break;
         case 'g':
@@ -104,7 +104,7 @@ int _tmain(int argc, _TCHAR * argv[])
             cout << "pitch = " << pitch << endl;
             if (abs(pitch) <= 180)
             {
-                iShare->pitch = pitch;
+                iShareTwo->pitch = pitch;
             }
             break;
         
@@ -113,7 +113,7 @@ int _tmain(int argc, _TCHAR * argv[])
             cout << "yaw = " << yaw << endl;
             if (abs(yaw) <= 180)
             {
-                iShare->yaw = yaw;
+                iShareTwo->yaw = yaw;
             }
             break;
         case 'h':
@@ -121,7 +121,7 @@ int _tmain(int argc, _TCHAR * argv[])
             cout << "yaw = " << yaw << endl;
             if (abs(yaw) <= 180) 
             {
-                iShare->yaw = yaw;
+                iShareTwo->yaw = yaw;
             }
             break;
         case 'z':
