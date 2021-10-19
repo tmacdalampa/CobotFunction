@@ -56,12 +56,26 @@ pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
     A = 0; B = 0; C = 0;
     pair<bool, array<double, 6>> res;
     
-    static array<double, 6> gp0 = { 0.05, 0.06, 0, A, B, C};
-    static array<double, 6> gp1 = { 0.05, -0.06, 0, A, B, C};
+    static array<double, 6> gp0 = { 0.05, 0.1, 0, A, B, C};
+    static array<double, 6> gp1 = { 0.05, 0.075, 0, A, B, C};
+    static array<double, 6> gp2 = { 0.05, 0.05, 0, A, B, C };
+    static array<double, 6> gp3 = { 0.05, 0.025, 0, A, B, C };
+    static array<double, 6> gp4 = { 0.05, 0, 0, A, B, C };
+    static array<double, 6> gp5 = { 0.05, -0.025, 0, A, B, C };
+    static array<double, 6> gp6 = { 0.05, -0.05, 0, A, B, C };
+    static array<double, 6> gp7 = { 0.05, -0.075, 0, A, B, C };
+    static array<double, 6> gp8 = { 0.05, -0.1, 0, A, B, C };
+    static array<double, 6> gp9 = { 0.05, -0.075, 0, A, B, C };
+    static array<double, 6> gp10 = { 0.05,-0.05, 0, A, B, C };
+    static array<double, 6> gp11 = { 0.05,-0.025, 0, A, B, C };
+    static array<double, 6> gp12 = { 0.05, 0, 0, A, B, C };
+    static array<double, 6> gp13 = { 0.05, 0.025, 0, A, B, C };
+    static array<double, 6> gp14 = { 0.05, 0.05, 0, A, B, C };
+    static array<double, 6> gp15 = { 0.05, 0.075, 0, A, B, C };
 
     static int i = 0;
-    int j = i % 2;
-    if (i<101)
+    int j = i % 16;
+    if (i<81)
     {
         res.first = true;
         switch (j)
@@ -71,6 +85,48 @@ pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
             break;
         case 1:
             res.second = gp1;
+            break;
+        case 2:
+            res.second = gp2;
+            break;
+        case 3:
+            res.second = gp3;
+            break;
+        case 4:
+            res.second = gp4;
+            break;
+        case 5:
+            res.second = gp5;
+            break;
+        case 6:
+            res.second = gp6;
+            break;
+        case 7:
+            res.second = gp7;
+            break;
+        case 8:
+            res.second = gp8;
+            break;
+        case 9:
+            res.second = gp9;
+            break;
+        case 10:
+            res.second = gp10;
+            break;
+        case 11:
+            res.second = gp11;
+            break;
+        case 12:
+            res.second = gp12;
+            break;
+        case 13:
+            res.second = gp13;
+            break;
+        case 14:
+            res.second = gp14;
+            break;
+        case 15:
+            res.second = gp15;
             break;
        
         }
@@ -236,7 +292,7 @@ int _tmain(int argc, _TCHAR* argv[])
     pSHM->pitch = deburring_point[4];
     pSHM->yaw = deburring_point[5];
     
-    bool isBlending = false;
+    bool isBlending = true;
     ArmController Scorpio_Arm(Init_Position);//input goal and current position in degrees
     Scorpio_Arm.DbPt6Setter(deburring_point);
     Scorpio_Arm.DeburringPtT06Setter(deburring_point);
@@ -276,7 +332,7 @@ int _tmain(int argc, _TCHAR* argv[])
                 //cout << LP_res.second[0] << "," << LP_res.second[1] << "," << LP_res.second[2] << endl;
                 Scorpio_Arm.DeburringPtT06Setter(deburring_point);
                 //init_goal.push(LP_res.second);
-                Scorpio_Arm.MotionPlanning(LP_res.second, 0.1, 0.1, 45, 450, isBlending);
+                Scorpio_Arm.MotionPlanning(LP_res.second, 0.1, 0.1, 45, 45, isBlending);
                 //init_goal.pop();
             }
             else
