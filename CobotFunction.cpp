@@ -75,7 +75,7 @@ pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
 
     static int i = 0;
     int j = i % 16;
-    if (i<81)
+    if (i<801)
     {
         res.first = true;
         switch (j)
