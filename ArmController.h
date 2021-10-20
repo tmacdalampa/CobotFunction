@@ -219,7 +219,7 @@ private:
 
 public:
 	const int AxisGearRatio[6] = { 161, 161, 121, 161, 161, 101 }; //gear raio
-	const double AxisZeroPoint[6] = { 57886.1416, 10373.1702, -82.9193, -1005.4330, 32374.2535, 32975.4638 };//zero point
+	const double AxisZeroPoint[6] = { 57886.1416, 10373.1702, 338, -1005.4330, 32374.2535, 28205 };//zero point
 	double Tt;
 	double t;
 	double dt;
