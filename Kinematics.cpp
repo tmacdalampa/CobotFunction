@@ -21,21 +21,11 @@ KinRes Kinematics::PtSetter(Vector4d goal_vector, Matrix4d deburringT06, array<d
     R06(0, 0) = deburringT06(0, 0); R06(0, 1) = deburringT06(0, 1); R06(0, 2) = deburringT06(0, 2);
     R06(1, 0) = deburringT06(1, 0); R06(1, 1) = deburringT06(1, 1); R06(1, 2) = deburringT06(1, 2);
     R06(2, 0) = deburringT06(2, 0); R06(2, 1) = deburringT06(2, 1); R06(2, 2) = deburringT06(2, 2);
-    
-    array<double, 3> goal_pose;
-
-    RT2ABC(goal_pose, R06);
-    
-    Matrix3d R_end;
-
-    Vector4d fend_point;
-
-    fend_point = deburringT06 * goal_vector;
-    
+        
     //cout << fend_point << endl;
     for (int i = 0; i < 3; i++)
     {
-        fend_pose[i] = fend_point[i];
+        fend_pose[i] = goal_vector[i];
     }
     for (int i = 3; i < 6; i++)
     {

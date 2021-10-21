@@ -50,32 +50,18 @@ int CyclicTask(PVOID Context)
     return 0;
 }
 
-pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
+pair<bool, array<double, 3>> LoadPoint()
 {
-    double A, B, C; //relative roll pitch yaw as init pose
-    A = 0; B = 0; C = 0;
-    pair<bool, array<double, 6>> res;
+    //double A, B, C; //relative roll pitch yaw as init pose
     
-    static array<double, 6> gp0 = { 0.05, 0.1, 0, A, B, C};
-    static array<double, 6> gp1 = { 0.05, 0.075, 0, A, B, C};
-    static array<double, 6> gp2 = { 0.05, 0.05, 0, A, B, C };
-    static array<double, 6> gp3 = { 0.05, 0.025, 0, A, B, C };
-    static array<double, 6> gp4 = { 0.05, 0, 0, A, B, C };
-    static array<double, 6> gp5 = { 0.05, -0.025, 0, A, B, C };
-    static array<double, 6> gp6 = { 0.05, -0.05, 0, A, B, C };
-    static array<double, 6> gp7 = { 0.05, -0.075, 0, A, B, C };
-    static array<double, 6> gp8 = { 0.05, -0.1, 0, A, B, C };
-    static array<double, 6> gp9 = { 0.05, -0.075, 0, A, B, C };
-    static array<double, 6> gp10 = { 0.05,-0.05, 0, A, B, C };
-    static array<double, 6> gp11 = { 0.05,-0.025, 0, A, B, C };
-    static array<double, 6> gp12 = { 0.05, 0, 0, A, B, C };
-    static array<double, 6> gp13 = { 0.05, 0.025, 0, A, B, C };
-    static array<double, 6> gp14 = { 0.05, 0.05, 0, A, B, C };
-    static array<double, 6> gp15 = { 0.05, 0.075, 0, A, B, C };
+    pair<bool, array<double, 3>> res;
+    
+    static array<double, 3> gp0 = { -0.05, 0.1, 0}; //the control point of the product as the deburring frame
+    static array<double, 3> gp1 = { -0.05, -0.1, 0};
 
     static int i = 0;
-    int j = i % 16;
-    if (i<801)
+    int j = i % 2;
+    if (i<21)
     {
         res.first = true;
         switch (j)
@@ -86,49 +72,6 @@ pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
         case 1:
             res.second = gp1;
             break;
-        case 2:
-            res.second = gp2;
-            break;
-        case 3:
-            res.second = gp3;
-            break;
-        case 4:
-            res.second = gp4;
-            break;
-        case 5:
-            res.second = gp5;
-            break;
-        case 6:
-            res.second = gp6;
-            break;
-        case 7:
-            res.second = gp7;
-            break;
-        case 8:
-            res.second = gp8;
-            break;
-        case 9:
-            res.second = gp9;
-            break;
-        case 10:
-            res.second = gp10;
-            break;
-        case 11:
-            res.second = gp11;
-            break;
-        case 12:
-            res.second = gp12;
-            break;
-        case 13:
-            res.second = gp13;
-            break;
-        case 14:
-            res.second = gp14;
-            break;
-        case 15:
-            res.second = gp15;
-            break;
-       
         }
         //cout << "i = " << i << endl;
     }
@@ -139,7 +82,7 @@ pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
 }
 int _tmain(int argc, _TCHAR* argv[])
 {
-#if 1
+#if 0
     pSharedInformationTwo pSHM;
     HANDLE  	hSHM = NULL;
     HANDLE     hEvent1;
@@ -284,26 +227,30 @@ int _tmain(int argc, _TCHAR* argv[])
         //RtPrintf("Init position:%d\n", (int)Init_Position[i]);
     }
 #endif
-    array<double, 6> deburring_point = { 0.475, 0, 0.7415, 180, 0, 0 };
-    pSHM->x = deburring_point[0];
+    
+    array<double, 6> deburring_point = { 0.475, 0, 0.7415, 0 ,0 ,0 };
+
+    
+    /*pSHM->x = deburring_point[0];
     pSHM->y = deburring_point[1];
     pSHM->z = deburring_point[2];
     pSHM->roll = deburring_point[3];
     pSHM->pitch = deburring_point[4];
     pSHM->yaw = deburring_point[5];
-    
-    bool isBlending = true;
+    */
+    bool isBlending = false;
     ArmController Scorpio_Arm(Init_Position);//input goal and current position in degrees
-    Scorpio_Arm.DbPt6Setter(deburring_point);
-    Scorpio_Arm.DeburringPtT06Setter(deburring_point);
+    Scorpio_Arm.T0dbptSetter(deburring_point);
+    
     Scorpio_Arm.fStartPoseSetter();
     
-    pair<bool, array<double, 6>> LP_res = LoadPoint(deburring_point);
+    pair<bool, array<double, 3>> LP_res = LoadPoint();
 
     
     Scorpio_Arm.MotionPlanning(LP_res.second, 0.1, 0.1, 45, 450, isBlending);
     
-#if 1
+    
+#if 0
     Code = RegisterCallback(&CyclicTask, &Scorpio_Arm);
     
     while (1)
@@ -388,8 +335,8 @@ int _tmain(int argc, _TCHAR* argv[])
     //End:
     //RtWprintf(L"iValue= %d , iData= % d , StringBuffer=%s \n", pSHM->iData, pSHM->iValue, pSHM->StringBuffer);
     RtPrintf("Basic Sample ended\n");
-    RtCloseHandle(hEvent1);
-    RtCloseHandle(hSemphone);
+    //RtCloseHandle(hEvent1);
+    //RtCloseHandle(hSemphone);
 
     
     ExitProcess(0);

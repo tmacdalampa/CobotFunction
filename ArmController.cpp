@@ -27,6 +27,10 @@ ArmController::ArmController(array<double, AXISNUM> init_position)
 	last_point_flag = false;
 	break_flag = false;
 
+	_RMdbpt << 1, 0, 0, 
+			   0, 1, 0, 
+		       0, 0, 1;
+
 	_target_position_q.clear();
 	_target_pose_q.clear();
 }
@@ -37,17 +41,7 @@ ArmController::~ArmController(void)
 	delete Intp;
 }
 
-void ArmController::DbPt6Setter(array<double, AXISNUM> deburring_point)
-{
-	Matrix4d T06, invT06;
-	Vector4d v_dp0;
-	v_dp0 << deburring_point[0], deburring_point[1], deburring_point[2], 1;
-	
-	Kin->FK_R(_init_axis_deg, T06);
-	invT06 = T06.inverse();
-	_vdp6 = invT06 * v_dp0;
-	//cout << _vdp6 << endl;
-}
+
 
 void ArmController::fStartPoseSetter()
 {
@@ -64,13 +58,20 @@ void ArmController::fStartPoseSetter()
 	
 }
 
-void ArmController::MotionPlanning(array<double, AXISNUM> goal, double vel_max, double acc_max, double ang_vel_max, double ang_acc_max, bool blending)
+void ArmController::MotionPlanning(array<double, 3> goal, double vel_max, double acc_max, double ang_vel_max, double ang_acc_max, bool blending)
 {
 	_target_pose_q.clear();
-	Vector4d goal_vector;
-	goal_vector << _vdp6[0] - goal[0] , _vdp6[1] - goal[1], _vdp6[2] - goal[2], 1;
-	//cout << goal_vector << endl;
-	Kin->PtSetter(goal_vector, _deburringT06, _fend_pose);
+	Vector3d init_vector;
+	VectorXd goal_vector;
+	init_vector << goal[0], goal[1], goal[2];
+	goal_vector = _RMdbpt * init_vector; //view as dbpt frame
+	Vector4d ggoal_vector;
+	ggoal_vector << goal_vector[0], goal_vector[1], goal_vector[2], 1;
+	//cout << ggoal_vector << endl;
+	Vector4d goal_vector_0;
+	goal_vector_0 = _T0dbpt * ggoal_vector;
+	//cout << goal_vector_0 << endl;
+	Kin->PtSetter(goal_vector_0, _RMdbpt, _fend_pose);
 #if 0
 	cout << "==========================" << endl;
 	for (int i = 0; i < 6; i++)
@@ -84,13 +85,13 @@ void ArmController::MotionPlanning(array<double, AXISNUM> goal, double vel_max, 
 	cout << "+++++++++++++++++++++++++++" << endl;
 
 #endif
-	
+	/*
 	cout << "goal_pose = " << _fend_pose[0] << ", "
 		<< _fend_pose[1] << ", "
 		<< _fend_pose[2] << ", "
 		<< _fend_pose[3] << ", "
 		<< _fend_pose[4] << ", "
-		<< _fend_pose[5] << endl;
+		<< _fend_pose[5] << endl;*/
 		
 		
 
@@ -216,25 +217,16 @@ void ArmController::UpdateRobotStates(array<double, AXISNUM> current_position)
 	Kin->FK(robot_axis_deg, robot_pose);
 }
 
-void ArmController::DeburringPtT06Setter(array<double, AXISNUM> deburring_point)
+
+
+void ArmController::T0dbptSetter(array<double, AXISNUM> deburring_point)
 {
-	Matrix3d dpRT;
-	Kin->ABC2RT(deburring_point[3], deburring_point[4], deburring_point[5], dpRT);
-	
-	
-	_deburringT06(0, 3) = deburring_point[0] - dpRT(0, 0) * _vdp6[0] - dpRT(0, 1) * _vdp6[1] - dpRT(0, 2) * _vdp6[2];
-	_deburringT06(1, 3) = deburring_point[1] - dpRT(1, 0) * _vdp6[0] - dpRT(1, 1) * _vdp6[1] - dpRT(1, 2) * _vdp6[2];
-	_deburringT06(2, 3) = deburring_point[2] - dpRT(2, 0) * _vdp6[0] - dpRT(2, 1) * _vdp6[1] - dpRT(2, 2) * _vdp6[2];
-	
-	_deburringT06(3, 3) = 1;
-
-	//KinRes ABC2RT(double A, double B, double C, Matrix3d & RT);
-
-
-	_deburringT06(0, 0) = dpRT(0, 0); _deburringT06(0, 1) = dpRT(0, 1); _deburringT06(0, 2) = dpRT(0, 2);
-	_deburringT06(1, 0) = dpRT(1, 0); _deburringT06(1, 1) = dpRT(1, 1); _deburringT06(1, 2) = dpRT(1, 2);
-	_deburringT06(2, 0) = dpRT(2, 0); _deburringT06(2, 1) = dpRT(2, 1); _deburringT06(2, 2) = dpRT(2, 2);
-	_deburringT06(3, 0) = 0; _deburringT06(3, 1) = 0; _deburringT06(3, 2) = 0;
-	//cout << _deburringT06 << endl;
-
+	_T0dbpt(0, 3) = deburring_point[0]; _T0dbpt(1, 3) = deburring_point[1]; _T0dbpt(2, 3) = deburring_point[2]; _T0dbpt(3, 3) = 1;
+	Matrix3d RotationMatrix;
+	Kin->ABC2RT(deburring_point[3], deburring_point[4], deburring_point[5],RotationMatrix);
+	_T0dbpt(0, 0) = RotationMatrix(0, 0); _T0dbpt(0, 1) = RotationMatrix(0, 1); _T0dbpt(0, 2) = RotationMatrix(0, 2);
+	_T0dbpt(1, 0) = RotationMatrix(1, 0); _T0dbpt(1, 1) = RotationMatrix(1, 1); _T0dbpt(1, 2) = RotationMatrix(1, 2);
+	_T0dbpt(2, 0) = RotationMatrix(2, 0); _T0dbpt(2, 1) = RotationMatrix(2, 1); _T0dbpt(2, 2) = RotationMatrix(2, 2);
+	_T0dbpt(3, 0) = 0; _T0dbpt(3, 1) = 0; _T0dbpt(3, 2) = 0;
+	//cout << _T0dbpt << endl;
 }

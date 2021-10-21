@@ -19,7 +19,9 @@ private:
 	HardwareData* HwTm;
 	Intepolator* Intp;
 
-	Matrix4d _deburringT06;
+	Matrix4d _T0ctrpt;//transformation matrix of fix robot frame to control point
+	Matrix4d _T0dbpt;
+	Matrix3d _RMdbpt;
 
 	array<double, AXISNUM> _init_axis_deg;
 	array<double, AXISNUM> _fstart_pose;
@@ -36,11 +38,12 @@ public:
 	array<double, AXISNUM> robot_pose;
 	ArmController(array<double, AXISNUM> init_position);
 	~ArmController(void);
-	void MotionPlanning(array<double, AXISNUM> goal, double vel, double acc, double ang_vel, double ang_acc, bool blending);
+	void MotionPlanning(array<double, 3> goal, double vel, double acc, double ang_vel, double ang_acc, bool blending);
 	void MotionPlanningStop();
 	array<double, AXISNUM> UpdateTargetPosition();
 	void UpdateRobotStates(array<double, AXISNUM> current_position);
-	void DeburringPtT06Setter(array<double, AXISNUM> deburring_point);
+	
 	void fStartPoseSetter();
-	void DbPt6Setter(array<double, AXISNUM> deburring_point);
+	void T0dbptSetter(array<double, AXISNUM> deburring_point);
+
 };
