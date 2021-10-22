@@ -72,10 +72,10 @@ pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
     static array<double, 6> gp13 = { 0.05, 0.025, 0, A, B, C };
     static array<double, 6> gp14 = { 0.05, 0.05, 0, A, B, C };
     static array<double, 6> gp15 = { 0.05, 0.075, 0, A, B, C };
-
+    
     static int i = 0;
     int j = i % 16;
-    if (i<81)
+    if (i<401)
     {
         res.first = true;
         switch (j)
@@ -86,6 +86,7 @@ pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
         case 1:
             res.second = gp1;
             break;
+        
         case 2:
             res.second = gp2;
             break;
@@ -128,7 +129,8 @@ pair<bool, array<double, 6>> LoadPoint(array<double, 6>& deburring_point)
         case 15:
             res.second = gp15;
             break;
-       
+        
+
         }
         //cout << "i = " << i << endl;
     }
@@ -284,7 +286,7 @@ int _tmain(int argc, _TCHAR* argv[])
         //RtPrintf("Init position:%d\n", (int)Init_Position[i]);
     }
 #endif
-    array<double, 6> deburring_point = { 0.475, 0, 0.7415, 180, 0, 0 };
+    array<double, 6> deburring_point = { 0.475, 0, 0.7415, 0,0,0 };
     pSHM->x = deburring_point[0];
     pSHM->y = deburring_point[1];
     pSHM->z = deburring_point[2];

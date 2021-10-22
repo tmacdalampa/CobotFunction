@@ -10,7 +10,12 @@ ArmController::ArmController(array<double, AXISNUM> init_position)
 	
 	Kin = new Kinematics;
 	Kin->FK(_init_axis_deg, robot_pose);
-
+	/*cout << "robot_pose= "
+		<< robot_pose[3] << ", "
+		<< robot_pose[4] << ", "
+		<< robot_pose[5] << endl;*/
+	Kin->ABC2RT(robot_pose[3], robot_pose[4], robot_pose[5], _R);
+	//cout << "init_R = " << _R << endl;
 	
 	Intp = new Intepolator(robot_pose);
 	HwTm->ENC2DEG(init_position, robot_axis_deg);
@@ -22,6 +27,11 @@ ArmController::ArmController(array<double, AXISNUM> init_position)
 		_fend_pose[i] = 0;
 		
 	}
+	for (int i = 0; i < 3; i++)
+	{
+		_rotation[i] = 0;
+	}
+
 
 	load_point_flag = true;
 	last_point_flag = false;
@@ -46,7 +56,7 @@ void ArmController::DbPt6Setter(array<double, AXISNUM> deburring_point)
 	Kin->FK_R(_init_axis_deg, T06);
 	invT06 = T06.inverse();
 	_vdp6 = invT06 * v_dp0;
-	//cout << _vdp6 << endl;
+	cout << _vdp6 << endl;
 }
 
 void ArmController::fStartPoseSetter()
@@ -218,22 +228,28 @@ void ArmController::UpdateRobotStates(array<double, AXISNUM> current_position)
 
 void ArmController::DeburringPtT06Setter(array<double, AXISNUM> deburring_point)
 {
-	Matrix3d dpRT;
-	Kin->ABC2RT(deburring_point[3], deburring_point[4], deburring_point[5], dpRT);
-	
-	
-	_deburringT06(0, 3) = deburring_point[0] - dpRT(0, 0) * _vdp6[0] - dpRT(0, 1) * _vdp6[1] - dpRT(0, 2) * _vdp6[2];
-	_deburringT06(1, 3) = deburring_point[1] - dpRT(1, 0) * _vdp6[0] - dpRT(1, 1) * _vdp6[1] - dpRT(1, 2) * _vdp6[2];
-	_deburringT06(2, 3) = deburring_point[2] - dpRT(2, 0) * _vdp6[0] - dpRT(2, 1) * _vdp6[1] - dpRT(2, 2) * _vdp6[2];
+	array<double, 3> deltatheta;
+	for (int i = 0; i < 3; i++)
+	{
+		deltatheta[i] = deburring_point[i + 3] - _rotation[i];
+		_rotation[i] = deburring_point[i + 3];
+	}
+	Matrix3d _deltaR;
+	Kin->ABC2RT(deltatheta[0], deltatheta[1], deltatheta[2], _deltaR);
+	_R = _deltaR * _R;
+	//cout << "_R = " << _R << endl;
+	_deburringT06(0, 3) = deburring_point[0] - _R(0, 0) * _vdp6[0] - _R(0, 1) * _vdp6[1] - _R(0, 2) * _vdp6[2];
+	_deburringT06(1, 3) = deburring_point[1] - _R(1, 0) * _vdp6[0] - _R(1, 1) * _vdp6[1] - _R(1, 2) * _vdp6[2];
+	_deburringT06(2, 3) = deburring_point[2] - _R(2, 0) * _vdp6[0] - _R(2, 1) * _vdp6[1] - _R(2, 2) * _vdp6[2];
 	
 	_deburringT06(3, 3) = 1;
 
 	//KinRes ABC2RT(double A, double B, double C, Matrix3d & RT);
 
 
-	_deburringT06(0, 0) = dpRT(0, 0); _deburringT06(0, 1) = dpRT(0, 1); _deburringT06(0, 2) = dpRT(0, 2);
-	_deburringT06(1, 0) = dpRT(1, 0); _deburringT06(1, 1) = dpRT(1, 1); _deburringT06(1, 2) = dpRT(1, 2);
-	_deburringT06(2, 0) = dpRT(2, 0); _deburringT06(2, 1) = dpRT(2, 1); _deburringT06(2, 2) = dpRT(2, 2);
+	_deburringT06(0, 0) = _R(0, 0); _deburringT06(0, 1) = _R(0, 1); _deburringT06(0, 2) = _R(0, 2);
+	_deburringT06(1, 0) = _R(1, 0); _deburringT06(1, 1) = _R(1, 1); _deburringT06(1, 2) = _R(1, 2);
+	_deburringT06(2, 0) = _R(2, 0); _deburringT06(2, 1) = _R(2, 1); _deburringT06(2, 2) = _R(2, 2);
 	_deburringT06(3, 0) = 0; _deburringT06(3, 1) = 0; _deburringT06(3, 2) = 0;
 	//cout << _deburringT06 << endl;
 

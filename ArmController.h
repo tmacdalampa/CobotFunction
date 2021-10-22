@@ -20,10 +20,14 @@ private:
 	Intepolator* Intp;
 
 	Matrix4d _deburringT06;
+	Matrix3d _R;
 
 	array<double, AXISNUM> _init_axis_deg;
 	array<double, AXISNUM> _fstart_pose;
 	array<double, AXISNUM> _fend_pose;
+
+	array<double, 3> _rotation;
+
 	deque<array<double, AXISNUM>> _target_pose_q;
 	deque<array<double, AXISNUM>> _target_position_q;
 
