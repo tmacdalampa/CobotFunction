@@ -7,14 +7,12 @@ This is a 6 axes robot arm controller developed under RTX64 environment without 
 The main purpose of this project is to verify online trajectory generation algorithm in two different appilication:
 
 1. TCP mode:
-    Imagine that a robot arm hold a tool like laser head to cut a triangle shape, the user could adjust the offset of preset rotation point(x, y, z, roll, pitch, yaw) 
-    and then the trajectory of robot arm end effector will be compensated automatically to keep the original shape.
+    Imagine that a robot arm hold a tool like laser head to cut a triangle shape, the user could adjust the offset of preset rotation point(x, y, z, roll, pitch, yaw) and then the trajectory of robot arm end effector will be compensated automatically to keep the original shape.
     This function was completed in branch "try_shm".
     
 2. FCP mode:
     Unlike TCP mode , there is a workpiece instead of a tool hold at the end effector of the robot arm, and there is a fix grinding point inside its working space.
-    The user could adjust the rotation(roll, pitch, yaw) related to the preset fixed point,
-    and then the trajectory of robot arm will be compensated automatically to keep the workpiece grinded as its shape but different angles.
+    The user could adjust the rotation(roll, pitch, yaw) related to the preset fixed point, and then the trajectory of robot arm will be compensated automatically to keep the workpiece grinded as its shape but different angles.
     This function was completed in branch "last_dance".
     
 RTX64 Application Template has created this "CobotFunction" project for you as a starting point.
